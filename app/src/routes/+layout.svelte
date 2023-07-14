@@ -1,6 +1,14 @@
 <script>
-	import Header from './Header.svelte';
-	import './styles.css';
+	// Your selected Skeleton theme:
+	import '@skeletonlabs/skeleton/themes/theme-skeleton.css'
+
+	// This contains the bulk of Skeletons required styles:
+	import '@skeletonlabs/skeleton/styles/skeleton.css'
+
+	// Finally, your application's global stylesheet (sometimes labeled 'app.css')
+	import '../app.css'
+
+	import Header from './Header.svelte'
 </script>
 
 <div class="app">
