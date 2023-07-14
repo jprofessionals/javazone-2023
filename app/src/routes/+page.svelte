@@ -1,6 +1,6 @@
 <script>
-	import Greet from '../lib/Greet.svelte';
+	import BluetoothScan from '$lib/BluetoothScan.svelte'
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<Greet />
+<h1 class="h1">Welcome to SvelteKit</h1>
+<BluetoothScan />
