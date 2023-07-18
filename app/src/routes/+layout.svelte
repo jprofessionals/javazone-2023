@@ -7,55 +7,25 @@
 
 	// Finally, your application's global stylesheet (sometimes labeled 'app.css')
 	import '../app.css'
+	import Img from '$lib/images/neko-idle.gif'
 
+	import { AppShell } from '@skeletonlabs/skeleton'
 	import Header from './Header.svelte'
+	import Sidebar from '$lib/Sidebar.svelte'
 </script>
 
-<div class="app">
-	<Header />
+<AppShell>
+	<svelte:fragment slot="header">
+		<Header />
+	</svelte:fragment>
+	<svelte:fragment slot="sidebarLeft">
+		<Sidebar />
+	</svelte:fragment>
 
-	<main>
-		<slot />
-	</main>
+	<slot />
 
-	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	</footer>
-</div>
-
-<style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
-
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
-	}
-</style>
+	<!-- <svelte:fragment slot="pageFooter">Footer</svelte:fragment> -->
+	<div class="absolute -right-4 -bottom-4">
+		<img src={Img} alt="dog" width="200" />
+	</div>
+</AppShell>
