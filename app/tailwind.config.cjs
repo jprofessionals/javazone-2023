@@ -11,11 +11,23 @@ module.exports = {
     ),
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        fancy: ["Poppins"],
+      },
+      screens: {
+        "3xl": "2560px",
+      },
+      width: {
+        dscreen: "100dvw",
+      },
+      height: {
+        dscreen: "100dvh",
+      },
+    },
   },
   plugins: [
     // 3. Append the Skeleton plugin to the end of this list
     ...require("@skeletonlabs/skeleton/tailwind/skeleton.cjs")(),
   ],
 };
-
