@@ -38,6 +38,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@tauri-apps/api": "^1.4.0"
+    "@tauri-apps/api": "^1.4.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^1.14.0"
   }
 }
