@@ -25,6 +25,8 @@ fn main() -> ! {
     let mut display = Display::new(board.display_pins);
     let mut timer = Timer::new(board.TIMER0);
     loop {
-        display.show(&mut timer, vec_numbers.display, 30);
+        for d in vec_numbers.display {
+            display.show(&mut timer, d, 300);
+        }
     }
 }

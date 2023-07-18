@@ -8,8 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Format)]
 pub struct MyJson {
-    age: u8,
-    pub display: [[u8; 5]; 5],
+    pub display: [[[u8; 5]; 5]; 5],
 }
 
 pub fn parse(json: &'static str) -> Option<MyJson> {
@@ -19,16 +18,16 @@ pub fn parse(json: &'static str) -> Option<MyJson> {
             defmt::println!("Successfully deserialized.\n");
             // print 1 element (u32)
             let display = { result.0 }; // result=(MyJson, usize) ; result.0=MyJson
+            defmt::println!("display: {:?}", display);
+
             return Some(display);
         }
         err => {
-            match err {
-                Err(_) => {
-                    defmt::println!("shit went down");
-                }
-                _ => (), // is this reachable ?
+            if err.is_err() {
+                defmt::println!("shit went down");
+                // display error message:
             }
         }
     }
-    return None;
+    None
 }
