@@ -1,10 +1,25 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/tauri'
 	import _letters from '../letters.json'
+	import cn from '$utils/cn'
 
 	let greetMsg = ''
 
 	const alphabet = _letters as { [key: string]: number[][] }
+
+	let customDisplay = [
+		[false, false, false, false, false],
+		[false, false, false, false, false],
+		[false, false, false, false, false],
+		[false, false, false, false, false],
+		[false, false, false, false, false],
+	]
+
+	function swapDisplay(col: number, row: number) {
+		let clonedDisplay = [...customDisplay]
+		clonedDisplay[row][col] = !customDisplay[row][col]
+		customDisplay = [...clonedDisplay]
+	}
 
 	let padding = [
 		[0, 0, 0, 0, 0],
@@ -15,6 +30,23 @@
 	]
 
 	let message: string[] = []
+
+	async function flash_microbit_custom() {
+		let displayListAsNums = customDisplay.map((row) => row.map(Number))
+		let fiveDisplayListsInArray = [
+			displayListAsNums,
+			displayListAsNums,
+			displayListAsNums,
+			displayListAsNums,
+			displayListAsNums,
+		]
+
+		greetMsg = await invoke('flash_display_nrf', {
+			display: {
+				display: fiveDisplayListsInArray,
+			},
+		})
+	}
 
 	async function flash_microbit() {
 		let displayList = message.map((l) => alphabet[l || 'A'])
@@ -55,6 +87,19 @@
 </script>
 
 <div class="flex flex-col gap-10 items-center mt-20">
+	<div class="flex flex-col gap-4">
+		{#each customDisplay as row, rowI}
+			<div class="grid grid-cols-5 gap-4">
+				{#each row as col, colI}
+					<button
+						class={cn(col && 'bg-green-700', 'p-4 variant-outline rounded-lg')}
+						on:click={() => swapDisplay(colI, rowI)}
+					/>
+				{/each}
+			</div>
+		{/each}
+		<button class="btn variant-filled" on:click={flash_microbit_custom}>Flash custom</button>
+	</div>
 	<div class="grid grid-cols-8 gap-3">
 		{#each Object.keys(alphabet) as letter}
 			<button
