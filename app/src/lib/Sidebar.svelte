@@ -24,6 +24,12 @@
 			<span>Leaderboard</span>
 		</div>
 	</AppRailAnchor>
+	<AppRailAnchor href="/microbit" selected={$page.url.pathname === '/microbit'}>
+		<div class="flex flex-col">
+			<span class="text-3xl leading-none">🤖</span>
+			<span>Microbit</span>
+		</div>
+	</AppRailAnchor>
 	<svelte:fragment slot="trail">
 		<AppRailAnchor href="/debug" title="Debug" selected={$page.url.pathname === '/debug'}>
 			<div class="flex flex-col">
