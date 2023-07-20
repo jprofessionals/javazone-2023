@@ -33,6 +33,10 @@
 				return {
 					text: splitLine,
 				} as CodeLine
+			} else if (splitLine.length === 1 && splitLine[0].trim() === '') {
+				return {
+					text: splitLine,
+				} as CodeLine
 			} else if (splitLine.length === 2) {
 				const [dir, val] = splitLine
 				if (['FORWARD', 'LEFT', 'RIGHT'].includes(dir.toUpperCase()) && !isNaN(Number(val))) {
