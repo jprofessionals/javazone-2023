@@ -1,12 +1,20 @@
 use app::utilities::{
+    bt_connect::connect,
     bt_scan::{bt_scanner, Device},
     flash_to_microbit::{self, FlashToMicrobit},
 };
-use tauri::{command, generate_handler, Builder};
 
-#[command]
-async fn get_bt_devices_command() -> Result<Vec<Device>, String> {
+use tauri::{generate_handler, Builder, Manager};
+#[tauri::command]
+async fn get_bt() -> Result<Vec<Device>, String> {
+    println!("get_bt");
     bt_scanner().await.map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+async fn connect_to_bt_device(device: String) -> Result<Vec<Device>, String> {
+    println!("Connect to bt device");
+    connect(device).await.map_err(|err| err.to_string())
 }
 
 #[tauri::command]
@@ -20,9 +28,22 @@ fn flash_display_nrf(display: FlashToMicrobit) -> String {
 }
 
 fn main() {
+    pretty_env_logger::init();
+
     Builder::default()
-        .invoke_handler(generate_handler![get_bt_devices_command])
-        .invoke_handler(generate_handler![flash_display_nrf])
+        .setup(|app| {
+            #[cfg(debug_assertions)]
+            {
+                let window = app.get_window("main").unwrap();
+                // window.open_devtools();
+            }
+            Ok(())
+        })
+        .invoke_handler(generate_handler![
+            flash_display_nrf,
+            get_bt,
+            connect_to_bt_device
+        ])
         .run(tauri::generate_context!())
         .expect("Error while running tauri app");
 }
