@@ -67,6 +67,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "btleplug",
+ "futures",
  "pretty_env_logger",
  "serde",
  "serde_json",
