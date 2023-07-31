@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
-use std::any::Any;
 use std::error::Error;
 use std::time::Duration;
 use tokio::time;
 
-use btleplug::api::{Central, Manager as _, Peripheral, PeripheralProperties, ScanFilter};
+use btleplug::api::{Central, CharPropFlags, Manager as _, Peripheral, ScanFilter};
 use btleplug::platform::Manager;
+use futures::stream::StreamExt;
 
 pub async fn bt_scan() -> Vec<u8> {
     time::sleep(Duration::from_secs(3)).await;
@@ -14,13 +14,12 @@ pub async fn bt_scan() -> Vec<u8> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Device {
-    name: String,
-    connected: bool,
+    pub name: String,
+    pub connected: bool,
 }
 
-//#[tokio::main]
 pub async fn bt_scanner() -> Result<Vec<Device>, Box<dyn Error>> {
-    pretty_env_logger::init();
+    println!("Got here");
 
     let manager = Manager::new().await?;
     let adapter_list = manager.adapters().await?;
@@ -37,7 +36,7 @@ pub async fn bt_scanner() -> Result<Vec<Device>, Box<dyn Error>> {
             .start_scan(ScanFilter::default())
             .await
             .expect("Can't scan BLE adapter for connected devices...");
-        time::sleep(Duration::from_secs(5)).await;
+        time::sleep(Duration::from_secs(3)).await;
         let peripherals = adapter.peripherals().await?;
         // println!("{:?}", peripherals);
         if peripherals.is_empty() {
@@ -51,25 +50,13 @@ pub async fn bt_scanner() -> Result<Vec<Device>, Box<dyn Error>> {
                     .clone()
                     .unwrap()
                     .local_name
-                    .unwrap_or(String::from("(peripheral name unknown)"));
-                // println!(
-                //     "Peripheral {:?} is connected: {:?}",
-                //     local_name, is_connected
-                // );
-                // if local_name == "HelloRust" {
-                //     println!("Hoooooly shit");
-                //     println!("{:?}", properties);
-                // if !is_connected {
-                //     println!("Connecting to peripheral {:?}...", &local_name);
-                //     if let Err(err) = peripheral.connect().await {
-                //         eprintln!("Error connecting to peripheral, skipping: {}", err);
-                //         continue;
-                //     }
-                // }
-                devices.push(Device {
-                    name: local_name,
-                    connected: is_connected,
-                });
+                    .unwrap_or(String::from("unknown"));
+                if local_name != "unknown" {
+                    devices.push(Device {
+                        name: local_name,
+                        connected: is_connected,
+                    });
+                }
                 //}
             }
         }
