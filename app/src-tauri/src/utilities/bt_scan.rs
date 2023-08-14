@@ -3,9 +3,8 @@ use std::error::Error;
 use std::time::Duration;
 use tokio::time;
 
-use btleplug::api::{Central, CharPropFlags, Manager as _, Peripheral, ScanFilter};
+use btleplug::api::{Central, Manager as _, Peripheral, ScanFilter};
 use btleplug::platform::Manager;
-use futures::stream::StreamExt;
 
 pub async fn bt_scan() -> Vec<u8> {
     time::sleep(Duration::from_secs(3)).await;
