@@ -1,8 +1,16 @@
 from microbit import *
 from micropython import const
-import math
 import neopixel
 import radio
+
+
+class Card:
+    def __init__(self, points):
+        self.points = points
+
+
+cards = {1057905702: Card(1),
+         1893419794: Card(1)}
 
 
 class RFIDCom:
@@ -29,9 +37,9 @@ _ACK = b"\x00\x00\xFF\x00\xFF\x00"
 _FRAME_START = b"\x00\x00\xFF"
 
 _I2C_ADDRESS = const(0x24)
-_I2C_READY = const(0x01)
 
 _I2C_DELAY = 10
+_I2C_CARD_POLL_TIMEOUT = 10000
 
 
 class BusyError(Exception):
@@ -39,20 +47,15 @@ class BusyError(Exception):
 
 
 class PN532:
-    def __init__(self, i2c, *, irq=None, req=None, debug=False):
-        self.debug = debug
-        self._irq = irq
-        self._req = req
+    def __init__(self, i2c):
         self._i2c = i2c
         self.state = RFIDCom.READY
-        self.initialised = False
-        self.configured = False
         self.previousCommand = None
         self.previousCommandTime = 0
         return
 
     def _write_data(self, frame):
-        print("write: ", [hex(i) for i in frame])
+        # ("write: ", [hex(i) for i in frame])
         self._i2c.write(_I2C_ADDRESS, frame)
 
     def _write_frame(self, data):
@@ -82,9 +85,9 @@ class PN532:
 
     def _read_data(self, count):
         frame = self._i2c.read(_I2C_ADDRESS, count + 1)
-        if frame[0] != _I2C_READY:
+        if frame[0] != 0x01:
             raise BusyError
-        print("read: ", [hex(i) for i in frame])
+        # print("read: ", [hex(i) for i in frame])
         return frame[1:]
 
     def _read_frame(self, length):
@@ -103,36 +106,39 @@ class PN532:
         return response[5 : 5 + frame_len]
 
     def is_ready(self):
-        status = bytearray(1)
-        try:
-            status = self._i2c.read(_I2C_ADDRESS, 1)
-        except OSError:
-            return False
-        return status == b"\x01"
+        return self._i2c.read(_I2C_ADDRESS, 1) == b"\x01"
 
     def got_ack(self):
         return self._read_data(len(_ACK)) == _ACK
 
     def get_card_id(self, command, response_length):
-        print("get_card_id")
         response = self._read_frame(response_length + 2)
-        print("get_card_id: ", [hex(i) for i in response])
         if not (response[0] == _PN532TOHOST and response[1] == (command + 1)):
-            print("Invalid card response")
             raise RuntimeError("Invalid card response")
         # Check only 1 card with up to a 7 byte UID is present.
         if response[2] != 0x01 or response[7] > 7:
-            print("Unsupported card response")
             raise RuntimeError("Unsupported card response")
-        return response[8 : 8 + response[7]]
+        card_id = 0
+        for i in range(response[7]):
+            card_id = card_id * 256 + response[8 + i]
+        return card_id
 
     def handle_rfid(self):
         try:
             currentRFIDTime = running_time()
-            if (self.previousCommandTime + _I2C_DELAY) > currentRFIDTime:
+            if currentRFIDTime < (self.previousCommandTime + _I2C_DELAY):
                 return None
 
+            if (
+                self.previousCommand == _COMMAND_INLISTPASSIVETARGET
+                and currentRFIDTime
+                > (self.previousCommandTime + _I2C_CARD_POLL_TIMEOUT)
+            ):
+                self.state = RFIDCom.READY
+
             if self.state != RFIDCom.READY and not self.is_ready():
+                if currentRFIDTime > (self.previousCommandTime + 1000):
+                    self.state = RFIDCom.READY
                 return None
 
             self.previousCommandTime = currentRFIDTime
@@ -150,8 +156,6 @@ class PN532:
                     self.previousCommand = self.write_command(
                         _COMMAND_INLISTPASSIVETARGET, params=[0x01, _MIFARE_ISO14443A]
                     )
-                    # self.write_command(0x60,
-                    #                    params=[0x01, 0x01, _MIFARE_ISO14443A])
                 self.state = RFIDCom.WAITING_FOR_ACK
             elif self.state == RFIDCom.WAITING_FOR_ACK:
                 if self.got_ack():
@@ -159,18 +163,26 @@ class PN532:
             elif self.state == RFIDCom.WAITING_FOR_RESPONSE:
                 if self.previousCommand is _COMMAND_SAMCONFIGURATION:
                     self._read_frame(0)
-                    print('SAMConfiguration complete')
                 elif self.previousCommand is _COMMAND_RFCONFIGURATION:
                     self._read_frame(0)
-                    print('RFConfiguration complete')
                 elif self.previousCommand is _COMMAND_INLISTPASSIVETARGET:
-                    print("got card?")
                     response = self.get_card_id(
                         _COMMAND_INLISTPASSIVETARGET, response_length=19
                     )
                     if response is not None:
-                        print("read: ", [hex(i) for i in response])
-                        print("card found: ", response)
+                        global tags
+                        if response not in tags:
+                            tags.add(response)
+                            global mostRecentTagTime
+                            mostRecentTagTime = currentRFIDTime
+                            print("new card found: ", response)
+                            global cards
+                            global points
+                            if response in cards:
+                                points = points + cards.get(response).points
+                            else:
+                                points = response
+                            display.scroll(str(points), wait=False, loop=True)
                         self.state = RFIDCom.READY
                         return response
                 self.state = RFIDCom.READY
@@ -179,127 +191,58 @@ class PN532:
         return None
 
 
-class Command:
-    def __init__(self, opcode, duration, useLeftMotor, useRightMotor):
-        self.opcode = opcode
-        self.duration = duration
-        self.useLeftMotor = useLeftMotor
-        self.useRightMotor = useRightMotor
-
-
-speed = 277.0 / 1000.0  # mm/ms
-wheelbase = 117.0  # mm between robot wheels
-breakTime = 300  # ms it takes to stop robot
-
 gameTime = 20000  # ms how long one round of the game is
 tagDisplayTime = 2000  # ms how long LEDs should show a tag was found
 
-torque = 400.0  # 0-1023 (after adjusting)
-leftAdjust = 1.000
-rightAdjust = 1.100
-
-commands = []
-currentOpcode = ""
-currentOpcodeEnd = 0
-
+tags = set()
 mostRecentTagTime = 0
 
 fireleds = neopixel.NeoPixel(pin13, 12)
 
-
-def degreesToLength(degrees):
-    return wheelbase * 2 * (math.pi) * (degrees / 360.0)
+points = 0
 
 
-def lengthToTime(length):
-    return length / speed
-
-
-def drive(useLeftMotor, useRightMotor):
-    if False:  # useLeftMotor:
-        pin16.write_analog(torque * leftAdjust)
-        pin8.write_digital(0)
-
-    if False:  # useRightMotor:
-        pin14.write_analog(torque * rightAdjust)
-        pin12.write_digital(0)
-
-
-def setLEDs(brightness):
+def setLEDs(r, g, b, brightness=1.0):
     for pixel_id in range(0, 11):
-        fireleds[pixel_id] = (0, int(255.0 * brightness), 0)
+        fireleds[pixel_id] = (
+            int(255.0 * r * brightness),
+            int(255.0 * g * brightness),
+            int(255.0 * b * brightness),
+        )
     fireleds.show()
 
 
-def stop():
-    # Left motor
-    pin16.write_digital(0)
-    pin8.write_digital(0)
-    # Left motor
-    pin14.write_digital(0)
-    pin12.write_digital(0)
-
-
-def appendForward(length):
-    commands.append(Command("forward", lengthToTime(length), True, True))
-
-
-def appendLeft(degrees):
-    commands.append(
-        Command("left", lengthToTime(degreesToLength(degrees)), False, True)
-    )
-
-
-def appendRight(degrees):
-    commands.append(
-        Command("right", lengthToTime(degreesToLength(degrees)), True, False)
-    )
-
-
 def initializeNextRun():
-    setLEDs(0.0)
-    global currentOpcode
-    global currentOpcodeEnd
-    currentOpcode = ""
-    currentOpcodeEnd = 0
+    setLEDs(0, 0, 0, 0.0)
+    global tags
+    tags.clear()
     global mostRecentTagTime
     mostRecentTagTime = 0
-    commands.clear()
-    display.on()
-    display.scroll("READY")
-    # Example movement. Should be replaced by code uploaded from frontend
-    appendForward(200.0)
-    appendLeft(90.0)
-    appendForward(100.0)
-    appendRight(180.0)
-    appendForward(100.0)
-    appendLeft(90.0)
-    appendForward(200.0)
+    global points
+    points = 0
+    display.scroll(str(points), wait=False, loop=True)
 
 
 def endRun():
-    stop()
-    display.off()
+    setLEDs(1.0, 0, 0, 0.5)
+    pass
 
 
 radio.config(channel=7, power=7)
 radio.on()
+display.on()
 
 i2c.init()
-if _I2C_ADDRESS in i2c.scan():
-    print("Found PN532")
-else:
-    print("PN532 NOT found!!!")
+if _I2C_ADDRESS not in i2c.scan():
+    display.scroll("PN532 NOT found!!!", wait=True, loop=True)
 
-pn532 = PN532(i2c, debug=True)
-while True:
-    pn532.handle_rfid()
+pn532 = PN532(i2c)
 
 while True:
     initializeNextRun()
     currentGameStartTime = running_time()
 
-    previouslyDisplayedRemainingTime = 6
+    # previouslyDisplayedRemainingTime = 6
     # Countdown will start at previouslyDisplayedRemainingTime-1
 
     while True:
@@ -310,35 +253,25 @@ while True:
             break
 
         # Count down seconds remaining
-        remainingTime = int(((currentGameStartTime + gameTime) - runningTime) / 1000.0)
-        if remainingTime < previouslyDisplayedRemainingTime:
-            previouslyDisplayedRemainingTime = remainingTime
-            display.scroll(remainingTime, wait=False)
-
-        # Exit if run is completed
-        if not commands and (runningTime >= currentOpcodeEnd):
-            break
-
-        # Execute next command if current command is done
-        if runningTime >= currentOpcodeEnd:
-            if currentOpcode == "":
-                command = commands[0]
-                currentOpcode = command.opcode
-                currentOpcodeEnd = runningTime + command.duration
-                drive(command.useLeftMotor, command.useRightMotor)
-                commands.pop(0)
-            else:
-                # Stop robot after each command
-                currentOpcodeEnd = currentOpcodeEnd + breakTime
-                stop()
-                currentOpcode = ""
+        # remainingTime = int(((currentGameStartTime + gameTime)
+        #                 - runningTime) / 1000.0)
+        # if remainingTime < previouslyDisplayedRemainingTime:
+        #   previouslyDisplayedRemainingTime = remainingTime
+        #   display.scroll(remainingTime, wait=False)
 
         pn532.handle_rfid()
+
         # Light up LEDs if tag is found
-        if runningTime <= (mostRecentTagTime + tagDisplayTime):
+        if mostRecentTagTime != 0 and runningTime <= (
+            mostRecentTagTime + tagDisplayTime
+        ):
             setLEDs(
-                ((mostRecentTagTime + tagDisplayTime) - runningTime) / tagDisplayTime
+                0,
+                1.0,
+                0,
+                ((mostRecentTagTime + tagDisplayTime) - runningTime) / tagDisplayTime,
             )
 
     endRun()
-    break
+
+    sleep(5000)
