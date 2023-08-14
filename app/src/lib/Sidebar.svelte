@@ -18,6 +18,12 @@
 			<span>Play</span>
 		</div>
 	</AppRailAnchor>
+	<AppRailAnchor href="/ws" selected={$page.url.pathname === '/ws'}>
+		<div class="flex flex-col">
+			<span class="text-3xl leading-none">🎮</span>
+			<span>Play</span>
+		</div>
+	</AppRailAnchor>
 	<AppRailAnchor href="/leaderboard" selected={$page.url.pathname === '/leaderboard'}>
 		<div class="flex flex-col">
 			<span class="text-3xl leading-none">🤩</span>
