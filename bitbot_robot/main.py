@@ -11,8 +11,8 @@ class Card:
         self.isStartPoint = isStartPoint
 
 
-cards = {1057905702: Card(1),
-         1893419794: Card(1)}
+cards = {1057905702: Card(1, False),
+         1893419794: Card(1, False)}
 
 
 class RFIDCom:
