@@ -11,9 +11,15 @@ dependencies:
   clsx:
     specifier: ^2.0.0
     version: 2.0.0
+  highlight.js:
+    specifier: ^11.8.0
+    version: 11.8.0
   tailwind-merge:
     specifier: ^1.14.0
     version: 1.14.0
+  tauri-plugin-websocket-api:
+    specifier: github:tauri-apps/tauri-plugin-websocket#v1
+    version: github.com/tauri-apps/tauri-plugin-websocket/4350fdfd0446a9d384b7c00390ce441d69d10a58
 
 devDependencies:
   '@fontsource/fira-mono':
@@ -1328,6 +1334,11 @@ packages:
       function-bind: 1.1.1
     dev: true
 
+  /highlight.js@11.8.0:
+    resolution: {integrity: sha512-MedQhoqVdr0U6SSnWPzfiadUcDHfN/Wzq25AkXiQv9oiOO/sG0S7XkvpFIqWBl9Yq1UYyYOOVORs5UW2XlPyzg==}
+    engines: {node: '>=12.0.0'}
+    dev: false
+
   /ignore@5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
@@ -2321,3 +2332,11 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  github.com/tauri-apps/tauri-plugin-websocket/4350fdfd0446a9d384b7c00390ce441d69d10a58:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-websocket/tar.gz/4350fdfd0446a9d384b7c00390ce441d69d10a58}
+    name: tauri-plugin-websocket-api
+    version: 0.0.0
+    dependencies:
+      '@tauri-apps/api': 1.4.0
+    dev: false
