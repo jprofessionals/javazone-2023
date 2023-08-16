@@ -12,82 +12,10 @@ use app::utilities::{
 
 use tauri::{generate_handler, Builder};
 
-use futures_util::{SinkExt, StreamExt};
-use tokio::{
-    net::{TcpListener, TcpStream},
-    sync::broadcast,
-    time::sleep,
-};
-
-use tokio_tungstenite::{accept_async, tungstenite::Result};
-
-async fn start_server() {
-    let addr = "127.0.0.1:8080".to_string();
-
-    let try_socket = TcpListener::bind(&addr).await;
-    let listener = try_socket.expect("Failed to bind");
-
-    let (tx, mut rx) = broadcast::channel::<String>(10);
-
-    tokio::spawn(async move {
-        println!("Starting up async process");
-        loop {
-            let msg = rx.recv().await;
-            println!("From websocket: {:?}", msg);
-        }
-    });
-
-    // tokio::spawn(read_line_from_serial(tx.clone()));
-
-    while let Ok((stream, _)) = listener.accept().await {
-        println!("Was connected");
-        tokio::spawn(accept_connection(stream, tx.clone()));
-    }
 }
 
-async fn accept_connection(stream: TcpStream, tx: broadcast::Sender<String>) {
-    let ws_stream = accept_async(stream).await.expect("Failed to accept");
-    let (mut write, mut read) = ws_stream.split();
-    let mut rx = tx.subscribe();
-
-    loop {
-        tokio::select! {
-            // Handle messages from WebSocket
-            msg_opt = read.next() => {
-                match msg_opt {
-                    Some(Ok(msg)) => {
-                        let txt_msg = msg.to_text().expect("Error while converting message");
-                        tx.send(txt_msg.to_string()).expect("Error while sending");
-                    },
-                    Some(Err(e)) => {
-                        eprintln!("Error while reading from websocket: {}", e);
-                    },
-                    None => {
-                        // WebSocket was closed
-                        break;
-                    }
-                }
-            }
-
-            // Handle messages from the broadcast channel
-            msg_res = rx.recv() => {
-                match msg_res {
-                    Ok(msg) => {
-                        let ws_msg = tokio_tungstenite::tungstenite::Message::text(msg);
-                        // Instead of spawning, handle sending within the current context
-                        if let Err(e) = write.send(ws_msg).await {
-                            eprintln!("error while sending to ws: {}", e);
-                        }
-                    },
-                    Err(_e) => {
-                        // All senders are disconnected. Depending on your logic you might want to exit here
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
+use tauri::{generate_handler, Builder, Manager};
+use tokio::time::sleep;
 
 #[tauri::command]
 fn get_available_ports() -> Vec<String> {
