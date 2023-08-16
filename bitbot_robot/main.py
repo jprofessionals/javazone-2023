@@ -221,11 +221,23 @@ class Drive:
             pass
         return 0
 
+    def adjustMotors(left, right):
+        if left >= 0:
+            pin16.write_analog(left)
+            pin8.write_analog(0)
+        else:
+            pin16.write_analog(0)
+            pin8.write_analog(-left)
+
+        if right >= 0:
+            pin14.write_analog(right)
+            pin12.write_analog(0)
+        else:
+            pin14.write_analog(0)
+            pin12.write_analog(-right)
+
     def stop(self):
-        pin16.write_analog(0)
-        pin8.write_analog(0)
-        pin14.write_analog(0)
-        pin12.write_analog(0)
+        adjustMotors(0, 0)
         self.state = DriveState.READY
 
     def turnLeft():
@@ -242,10 +254,7 @@ class Drive:
             else:
                 self.linesPassed = 1
                 self.isOnLine = False
-            pin16.write_analog(0)
-            pin8.write_analog(self.TORQUE)
-            pin14.write_analog(self.TORQUE)
-            pin12.write_analog(0)
+                adjustMotors(-self.TORQUE, self.TORQUE)
             self.state = DriveState.TURNING_AROUND
         elif self.state == DriveState.TURNING_AROUND:
             status = self.getLinesensorStatus()
@@ -257,7 +266,11 @@ class Drive:
                 self.isOnLine = True
 
             if self.linesPassed >= 3:
-                self.stop()
+                adjustMotors(self.TORQUE, self.TORQUE)
+                self.state == DriveState.FORWARD
+
+    def driveForward():
+        pass
 
 gameTime = 20000  # ms how long one round of the game is
 tagDisplayTime = 2000  # ms how long LEDs should show a tag was found
