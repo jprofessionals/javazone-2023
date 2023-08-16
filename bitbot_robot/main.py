@@ -26,7 +26,7 @@ class BusyError(Exception):
 
 
 class PN532:
-    I2C_ADDRESS = const(0x24)
+    PN532_ADDRESS = const(0x24)
 
     PREAMBLE = const(0x00)
     STARTCODE1 = const(0x00)
@@ -56,7 +56,7 @@ class PN532:
 
     def writeData(self, frame):
         # ("write: ", [hex(i) for i in frame])
-        self._i2c.write(self.I2C_ADDRESS, frame)
+        self._i2c.write(self.PN532_ADDRESS, frame)
 
     def writeFrame(self, data):
         length = len(data)
@@ -84,7 +84,7 @@ class PN532:
         return command
 
     def readData(self, count):
-        frame = self._i2c.read(self.I2C_ADDRESS, count + 1)
+        frame = self._i2c.read(self.PN532_ADDRESS, count + 1)
         if frame[0] != 0x01:
             raise BusyError
         # print("read: ", [hex(i) for i in frame])
@@ -99,14 +99,14 @@ class PN532:
         if (frameLen + response[4]) & 0xFF != 0:
             raise RuntimeError("Response length checksum mismatch")
         # Check frame checksum value matches bytes.
-        checksum = sum(response[5: 5 + frameLen + 1]) & 0xFF
+        checksum = sum(response[5 : 5 + frameLen + 1]) & 0xFF
         if checksum != 0:
             raise RuntimeError("Response checksum mismatch:", checksum)
         # Return frame data.
-        return response[5: 5 + frameLen]
+        return response[5 : 5 + frameLen]
 
     def isReady(self):
-        return self._i2c.read(self.I2C_ADDRESS, 1) == b"\x01"
+        return self._i2c.read(self.PN532_ADDRESS, 1) == b"\x01"
 
     def gotAck(self):
         return self.readData(len(self.ACK)) == self.ACK
@@ -130,9 +130,9 @@ class PN532:
                 return None
 
             if (
-                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                    and currentRFIDTime
-                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                and currentRFIDTime
+                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -200,7 +200,7 @@ class DriveState:
 
 
 class Drive:
-    I2C_ADDRESS = const(0x1c)  # address of PCA9557
+    LF_ADDRESS = const(0x1C)  # address of PCA9557
 
     LEFT_LF = const(0x01)
     RIGHT_LF = const(0x02)
@@ -217,8 +217,8 @@ class Drive:
 
     def getLinesensorStatus(self):
         try:
-            value = i2c.read(self.I2C_ADDRESS, 1)
-            if (value is not None):
+            value = i2c.read(self.LF_ADDRESS, 1)
+            if value is not None:
                 return value[0] & (self.LEFT_LF | self.RIGHT_LF)
         except OSError:
             pass
@@ -277,7 +277,7 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_RIGHT
-            self.adjustMotors(self.TORQUE,0)
+            self.adjustMotors(self.TORQUE, 0)
         elif self.state == DriveState.TURNING_RIGHT:
             self.keepTurning(self.RIGHT_LF)
 
@@ -307,6 +307,31 @@ class Drive:
     def driveForward(self):
         pass
 
+    def handleDrive(self):
+        if self.state is DriveState.READY:
+            global commands
+            if not len(commands):
+                return False
+            command = commands[0]
+            commands = commands[1:]
+            if command == "L":
+                self.turnLeft()
+            elif command == "R":
+                self.turnRight()
+            elif command == "U":
+                self.turn180()
+            elif command == "F":
+                self.driveForward()
+        elif self.state is DriveState.TURNING_LEFT:
+            self.turnLeft()
+        elif self.state is DriveState.TURNING_RIGHT:
+            self.turnRight()
+        elif self.state is DriveState.TURNING_AROUND:
+            self.turn180()
+        elif self.state is DriveState.FORWARD:
+            self.driveForward()
+        return True
+
 
 gameTime = 20000  # ms how long one round of the game is
 tagDisplayTime = 2000  # ms how long LEDs should show a tag was found
@@ -316,6 +341,7 @@ mostRecentTagTime = 0
 
 fireleds = neopixel.NeoPixel(pin13, 12)
 
+commands = ""
 points = 0
 
 
@@ -335,6 +361,8 @@ def initializeNextRun():
     tags.clear()
     global mostRecentTagTime
     mostRecentTagTime = 0
+    global commands
+    commands = "LRFU"
     global points
     points = 0
     display.scroll(str(points), wait=False, loop=True)
@@ -350,10 +378,11 @@ radio.on()
 display.on()
 
 i2c.init()
-if PN532.I2C_ADDRESS not in i2c.scan():
+if PN532.PN532_ADDRESS not in i2c.scan():
     display.scroll("PN532 NOT found!!!", wait=True, loop=True)
 
 pn532 = PN532(i2c)
+drive = Drive()
 
 while True:
     initializeNextRun()
@@ -378,16 +407,19 @@ while True:
 
         pn532.handleRFID()
 
+        if not drive.handleDrive():
+            break
+
         # Light up LEDs if tag is found
         if mostRecentTagTime != 0 and runningTime <= (
-                mostRecentTagTime + tagDisplayTime
+            mostRecentTagTime + tagDisplayTime
         ):
             setLEDs(
                 0,
                 1.0,
                 0,
                 ((mostRecentTagTime + tagDisplayTime) - runningTime) / tagDisplayTime,
-                )
+            )
 
     endRun()
 
