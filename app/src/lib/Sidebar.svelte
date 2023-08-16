@@ -20,8 +20,8 @@
 	</AppRailAnchor>
 	<AppRailAnchor href="/ws" selected={$page.url.pathname === '/ws'}>
 		<div class="flex flex-col">
-			<span class="text-3xl leading-none">🎮</span>
-			<span>Play</span>
+			<span class="text-3xl leading-none">🌐🧦</span>
+			<span>WebSocket</span>
 		</div>
 	</AppRailAnchor>
 	<AppRailAnchor href="/leaderboard" selected={$page.url.pathname === '/leaderboard'}>
@@ -36,11 +36,11 @@
 			<span>Microbit</span>
 		</div>
 	</AppRailAnchor>
-	<svelte:fragment slot="trail">
-		<AppRailAnchor href="/debug" title="Debug" selected={$page.url.pathname === '/debug'}>
-			<div class="flex flex-col">
-				<span class="text-3xl leading-none">🐛</span>
-			</div>
-		</AppRailAnchor>
-	</svelte:fragment>
+	<!-- <svelte:fragment slot="trail"> -->
+	<!-- 	<AppRailAnchor href="/debug" title="Debug" selected={$page.url.pathname === '/debug'}> -->
+	<!-- 		<div class="flex flex-col"> -->
+	<!-- 			<span class="text-3xl leading-none">🐛</span> -->
+	<!-- 		</div> -->
+	<!-- 	</AppRailAnchor> -->
+	<!-- </svelte:fragment> -->
 </AppRail>
