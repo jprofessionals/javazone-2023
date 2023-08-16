@@ -1,20 +1,12 @@
-use std::{
-    io::{BufRead, BufReader},
-    sync::Mutex,
-    time::Duration,
-};
+use std::sync::Mutex;
 
-use app::utilities::{
-    serial_comm::{send_message, BAUD_RATE},
-    setup_ws_server::start_server,
-};
+use app::utilities::{serial_comm::send_message, setup_ws_server::start_server};
 
 struct DeviceState {
     port: Mutex<String>,
 }
 
-use tauri::{generate_handler, Builder, Manager};
-use tokio::time::sleep;
+use tauri::{generate_handler, Builder};
 
 /// Find all available ports on the computer. Ideally it will find something
 /// related to usb.
@@ -47,15 +39,15 @@ fn main() {
 
     tauri::async_runtime::spawn(start_server());
     Builder::default()
-        .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                // Start window with dev tools open in development
-                let window = app.get_window("main").unwrap();
-                window.open_devtools();
-            }
-            Ok(())
-        })
+        // .setup(|app| {
+        //     #[cfg(debug_assertions)]
+        //     {
+        //         // Start window with dev tools open in development
+        //         let window = app.get_window("main").unwrap();
+        //         window.open_devtools();
+        //     }
+        //     Ok(())
+        // })
         .manage(DeviceState {
             port: Default::default(),
         })
