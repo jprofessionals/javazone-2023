@@ -5,8 +5,9 @@ import radio
 
 
 class Card:
-    def __init__(self, points):
+    def __init__(self, points, isStartPoint):
         self.points = points
+        self.isStartPoint = isStartPoint
 
 
 cards = {1057905702: Card(1),
@@ -19,51 +20,49 @@ class RFIDCom:
     WAITING_FOR_RESPONSE = 3
 
 
-_PREAMBLE = const(0x00)
-_STARTCODE1 = const(0x00)
-_STARTCODE2 = const(0xFF)
-_POSTAMBLE = const(0x00)
-
-_HOSTTOPN532 = const(0xD4)
-_PN532TOHOST = const(0xD5)
-
-_COMMAND_SAMCONFIGURATION = const(0x14)
-_COMMAND_RFCONFIGURATION = const(0x32)
-_COMMAND_INLISTPASSIVETARGET = const(0x4A)
-
-_MIFARE_ISO14443A = const(0x00)
-
-_ACK = b"\x00\x00\xFF\x00\xFF\x00"
-_FRAME_START = b"\x00\x00\xFF"
-
-_I2C_ADDRESS = const(0x24)
-
-_I2C_DELAY = 10
-_I2C_CARD_POLL_TIMEOUT = 10000
-
-
 class BusyError(Exception):
     pass
 
 
 class PN532:
+    I2C_ADDRESS = const(0x24)
+
+    PREAMBLE = const(0x00)
+    STARTCODE1 = const(0x00)
+    STARTCODE2 = const(0xFF)
+    POSTAMBLE = const(0x00)
+
+    HOSTTOPN532 = const(0xD4)
+    PN532TOHOST = const(0xD5)
+
+    COMMAND_SAMCONFIGURATION = const(0x14)
+    COMMAND_RFCONFIGURATION = const(0x32)
+    COMMAND_INLISTPASSIVETARGET = const(0x4A)
+
+    ISO14443A = const(0x00)
+
+    ACK = b"\x00\x00\xFF\x00\xFF\x00"
+    FRAME_START = b"\x00\x00\xFF"
+
+    I2C_DELAY = 10
+    I2C_CARD_POLL_TIMEOUT = 10000
+
     def __init__(self, i2c):
         self._i2c = i2c
         self.state = RFIDCom.READY
         self.previousCommand = None
         self.previousCommandTime = 0
-        return
 
-    def _write_data(self, frame):
+    def writeData(self, frame):
         # ("write: ", [hex(i) for i in frame])
-        self._i2c.write(_I2C_ADDRESS, frame)
+        self._i2c.write(self.I2C_ADDRESS, frame)
 
-    def _write_frame(self, data):
+    def writeFrame(self, data):
         length = len(data)
         frame = bytearray(length + 7)
-        frame[0] = _PREAMBLE
-        frame[1] = _STARTCODE1
-        frame[2] = _STARTCODE2
+        frame[0] = self.PREAMBLE
+        frame[1] = self.STARTCODE1
+        frame[2] = self.STARTCODE2
         checksum = sum(frame[0:3])
         frame[3] = length & 0xFF
         frame[4] = (~length + 1) & 0xFF
@@ -71,72 +70,72 @@ class PN532:
             frame[5 + x] = data[x]
         checksum += sum(data)
         frame[-2] = ~checksum & 0xFF
-        frame[-1] = _POSTAMBLE
-        self._write_data(bytes(frame))
+        frame[-1] = self.POSTAMBLE
+        self.writeData(bytes(frame))
 
-    def write_command(self, command, params=[]):
+    def writeCommand(self, command, params=[]):
         data = bytearray(2 + len(params))
-        data[0] = _HOSTTOPN532
+        data[0] = self.HOSTTOPN532
         data[1] = command & 0xFF
         for i, val in enumerate(params):
             data[2 + i] = val
-        self._write_frame(data)
+        self.writeFrame(data)
         return command
 
-    def _read_data(self, count):
-        frame = self._i2c.read(_I2C_ADDRESS, count + 1)
+    def readData(self, count):
+        frame = self._i2c.read(self.I2C_ADDRESS, count + 1)
         if frame[0] != 0x01:
             raise BusyError
         # print("read: ", [hex(i) for i in frame])
         return frame[1:]
 
-    def _read_frame(self, length):
-        response = self._read_data(length + 8)
-        if response[0:3] != _FRAME_START:
+    def readFrame(self, length):
+        response = self.readData(length + 8)
+        if response[0:3] != self.FRAME_START:
             raise RuntimeError("Invalid response frame start")
         # Check length & length checksum match.
-        frame_len = response[3]
-        if (frame_len + response[4]) & 0xFF != 0:
+        frameLen = response[3]
+        if (frameLen + response[4]) & 0xFF != 0:
             raise RuntimeError("Response length checksum mismatch")
         # Check frame checksum value matches bytes.
-        checksum = sum(response[5 : 5 + frame_len + 1]) & 0xFF
+        checksum = sum(response[5 : 5 + frameLen + 1]) & 0xFF
         if checksum != 0:
             raise RuntimeError("Response checksum mismatch:", checksum)
         # Return frame data.
-        return response[5 : 5 + frame_len]
+        return response[5 : 5 + frameLen]
 
-    def is_ready(self):
-        return self._i2c.read(_I2C_ADDRESS, 1) == b"\x01"
+    def isReady(self):
+        return self._i2c.read(self.I2C_ADDRESS, 1) == b"\x01"
 
-    def got_ack(self):
-        return self._read_data(len(_ACK)) == _ACK
+    def gotAck(self):
+        return self.readData(len(self.ACK)) == self.ACK
 
-    def get_card_id(self, command, response_length):
-        response = self._read_frame(response_length + 2)
-        if not (response[0] == _PN532TOHOST and response[1] == (command + 1)):
+    def getCardId(self, command, responseLen):
+        response = self.readFrame(responseLen + 2)
+        if not (response[0] == self.PN532TOHOST and response[1] == (command + 1)):
             raise RuntimeError("Invalid card response")
         # Check only 1 card with up to a 7 byte UID is present.
         if response[2] != 0x01 or response[7] > 7:
             raise RuntimeError("Unsupported card response")
-        card_id = 0
+        cardId = 0
         for i in range(response[7]):
-            card_id = card_id * 256 + response[8 + i]
-        return card_id
+            cardId = cardId * 256 + response[8 + i]
+        return cardId
 
-    def handle_rfid(self):
+    def handleRFID(self):
         try:
             currentRFIDTime = running_time()
-            if currentRFIDTime < (self.previousCommandTime + _I2C_DELAY):
+            if currentRFIDTime < (self.previousCommandTime + self.I2C_DELAY):
                 return None
 
             if (
-                self.previousCommand == _COMMAND_INLISTPASSIVETARGET
+                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
                 and currentRFIDTime
-                > (self.previousCommandTime + _I2C_CARD_POLL_TIMEOUT)
+                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
-            if self.state != RFIDCom.READY and not self.is_ready():
+            if self.state != RFIDCom.READY and not self.isReady():
                 if currentRFIDTime > (self.previousCommandTime + 1000):
                     self.state = RFIDCom.READY
                 return None
@@ -145,29 +144,29 @@ class PN532:
 
             if self.state == RFIDCom.READY:
                 if self.previousCommand is None:
-                    self.previousCommand = self.write_command(
-                        _COMMAND_SAMCONFIGURATION, params=[0x01, 0x00, 0x01]
+                    self.previousCommand = self.writeCommand(
+                        self.COMMAND_SAMCONFIGURATION, params=[0x01, 0x00, 0x01]
                     )
-                elif self.previousCommand is _COMMAND_SAMCONFIGURATION:
-                    self.previousCommand = self.write_command(
-                        _COMMAND_RFCONFIGURATION, params=[0x01, 0x01]
+                elif self.previousCommand is self.COMMAND_SAMCONFIGURATION:
+                    self.previousCommand = self.writeCommand(
+                        self.COMMAND_RFCONFIGURATION, params=[0x01, 0x01]
                     )
                 else:
-                    self.previousCommand = self.write_command(
-                        _COMMAND_INLISTPASSIVETARGET, params=[0x01, _MIFARE_ISO14443A]
+                    self.previousCommand = self.writeCommand(
+                        self.COMMAND_INLISTPASSIVETARGET, params=[0x01, self.ISO14443A]
                     )
                 self.state = RFIDCom.WAITING_FOR_ACK
             elif self.state == RFIDCom.WAITING_FOR_ACK:
-                if self.got_ack():
+                if self.gotAck():
                     self.state = RFIDCom.WAITING_FOR_RESPONSE
             elif self.state == RFIDCom.WAITING_FOR_RESPONSE:
-                if self.previousCommand is _COMMAND_SAMCONFIGURATION:
-                    self._read_frame(0)
-                elif self.previousCommand is _COMMAND_RFCONFIGURATION:
-                    self._read_frame(0)
-                elif self.previousCommand is _COMMAND_INLISTPASSIVETARGET:
-                    response = self.get_card_id(
-                        _COMMAND_INLISTPASSIVETARGET, response_length=19
+                if self.previousCommand is self.COMMAND_SAMCONFIGURATION:
+                    self.readFrame(0)
+                elif self.previousCommand is self.COMMAND_RFCONFIGURATION:
+                    self.readFrame(0)
+                elif self.previousCommand is self.COMMAND_INLISTPASSIVETARGET:
+                    response = self.getCardId(
+                        self.COMMAND_INLISTPASSIVETARGET, responseLen=19
                     )
                     if response is not None:
                         global tags
@@ -190,6 +189,75 @@ class PN532:
             pass
         return None
 
+
+class DriveState:
+    READY = 1
+    TURNING_LEFT = 2
+    TURNING_RIGHT = 3
+    TURNING_AROUND = 4
+    FORWARD = 5
+
+class Drive:
+    I2C_ADDRESS = const(0x1c)  # address of PCA9557
+
+    LEFT_LF = const(0x01)
+    RIGHT_LF = const(0x02)
+
+    TORQUE = 300
+
+    linesPassed = 0
+    isOnLine = False
+
+    def __init__(self):
+        self.state = DriveState.READY
+        self.stop()
+
+    def getLinesensorStatus(self):
+        try:
+            value = i2c.read(self.I2C_ADDRESS, 1)
+            if (value is not None):
+                return value[0] & (self.LEFT_LF | self.RIGHT_LF)
+        except OSError:
+            pass
+        return 0
+
+    def stop(self):
+        pin16.write_analog(0)
+        pin8.write_analog(0)
+        pin14.write_analog(0)
+        pin12.write_analog(0)
+        self.state = DriveState.READY
+
+    def turnLeft():
+        pass
+
+    def turnRight():
+        pass
+
+    def turn180(self):
+        if self.state == DriveState.READY:
+            if self.getLinesensorStatus() & self.LEFT_LF:
+                self.linesPassed = 0
+                self.isOnLine = True
+            else:
+                self.linesPassed = 1
+                self.isOnLine = False
+            pin16.write_analog(0)
+            pin8.write_analog(self.TORQUE)
+            pin14.write_analog(self.TORQUE)
+            pin12.write_analog(0)
+            self.state = DriveState.TURNING_AROUND
+        elif self.state == DriveState.TURNING_AROUND:
+            status = self.getLinesensorStatus()
+            if self.isOnLine:
+                if not (status & self.LEFT_LF):
+                    self.linesPassed += 1
+                    self.isOnLine = False
+            elif status & self.LEFT_LF:
+                self.isOnLine = True
+
+            if self.linesPassed >= 3:
+                self.stop()
 
 gameTime = 20000  # ms how long one round of the game is
 tagDisplayTime = 2000  # ms how long LEDs should show a tag was found
@@ -233,7 +301,7 @@ radio.on()
 display.on()
 
 i2c.init()
-if _I2C_ADDRESS not in i2c.scan():
+if PN532.I2C_ADDRESS not in i2c.scan():
     display.scroll("PN532 NOT found!!!", wait=True, loop=True)
 
 pn532 = PN532(i2c)
@@ -259,7 +327,7 @@ while True:
         #   previouslyDisplayedRemainingTime = remainingTime
         #   display.scroll(remainingTime, wait=False)
 
-        pn532.handle_rfid()
+        pn532.handleRFID()
 
         # Light up LEDs if tag is found
         if mostRecentTagTime != 0 and runningTime <= (
