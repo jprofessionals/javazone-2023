@@ -1,7 +1,8 @@
-from microbit import *
 from micropython import const
+
 import neopixel
 import radio
+from microbit import *
 
 
 class Card:
@@ -98,11 +99,11 @@ class PN532:
         if (frameLen + response[4]) & 0xFF != 0:
             raise RuntimeError("Response length checksum mismatch")
         # Check frame checksum value matches bytes.
-        checksum = sum(response[5 : 5 + frameLen + 1]) & 0xFF
+        checksum = sum(response[5: 5 + frameLen + 1]) & 0xFF
         if checksum != 0:
             raise RuntimeError("Response checksum mismatch:", checksum)
         # Return frame data.
-        return response[5 : 5 + frameLen]
+        return response[5: 5 + frameLen]
 
     def isReady(self):
         return self._i2c.read(self.I2C_ADDRESS, 1) == b"\x01"
@@ -129,9 +130,9 @@ class PN532:
                 return None
 
             if (
-                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                and currentRFIDTime
-                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                    and currentRFIDTime
+                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -197,6 +198,7 @@ class DriveState:
     TURNING_AROUND = 4
     FORWARD = 5
 
+
 class Drive:
     I2C_ADDRESS = const(0x1c)  # address of PCA9557
 
@@ -204,6 +206,7 @@ class Drive:
     RIGHT_LF = const(0x02)
 
     TORQUE = 300
+    SLOW_TORQUE = 200
 
     linesPassed = 0
     isOnLine = False
@@ -221,7 +224,7 @@ class Drive:
             pass
         return 0
 
-    def adjustMotors(left, right):
+    def adjustMotors(self, left, right):
         if left >= 0:
             pin16.write_analog(left)
             pin8.write_analog(0)
@@ -237,14 +240,46 @@ class Drive:
             pin12.write_analog(-right)
 
     def stop(self):
-        adjustMotors(0, 0)
+        self.adjustMotors(0, 0)
         self.state = DriveState.READY
 
-    def turnLeft():
-        pass
+    def turnLeft(self):
+        if self.state == DriveState.READY:
+            if self.getLinesensorStatus() & self.LEFT_LF:
+                self.linesPassed = 0
+                self.isOnLine = True
+            else:
+                self.linesPassed = 1
+                self.isOnLine = False
+            self.state = DriveState.TURNING_LEFT
+            self.adjustMotors(0, self.TORQUE)
+        elif self.state == DriveState.TURNING_LEFT:
+            self.keepTurning(self.LEFT_LF)
 
-    def turnRight():
-        pass
+    def keepTurning(self, direction):
+        status = self.getLinesensorStatus()
+        if self.isOnLine:
+            if not (status & direction):
+                self.linesPassed += 1
+                self.isOnLine = False
+        elif status & direction:
+            self.isOnLine = True
+        if self.linesPassed >= 2:
+            self.adjustMotors(self.TORQUE, self.TORQUE)
+            self.state = DriveState.FORWARD
+
+    def turnRight(self):
+        if self.state == DriveState.READY:
+            if self.getLinesensorStatus() & self.RIGHT_LF:
+                self.linesPassed = 0
+                self.isOnLine = True
+            else:
+                self.linesPassed = 1
+                self.isOnLine = False
+            self.state = DriveState.TURNING_RIGHT
+            self.adjustMotors(self.TORQUE,0)
+        elif self.state == DriveState.TURNING_RIGHT:
+            self.keepTurning(self.RIGHT_LF)
 
     def turn180(self):
         if self.state == DriveState.READY:
@@ -254,7 +289,7 @@ class Drive:
             else:
                 self.linesPassed = 1
                 self.isOnLine = False
-                adjustMotors(-self.TORQUE, self.TORQUE)
+                self.adjustMotors(-self.TORQUE, self.TORQUE)
             self.state = DriveState.TURNING_AROUND
         elif self.state == DriveState.TURNING_AROUND:
             status = self.getLinesensorStatus()
@@ -266,11 +301,12 @@ class Drive:
                 self.isOnLine = True
 
             if self.linesPassed >= 3:
-                adjustMotors(self.TORQUE, self.TORQUE)
+                self.adjustMotors(self.TORQUE, self.TORQUE)
                 self.state == DriveState.FORWARD
 
-    def driveForward():
+    def driveForward(self):
         pass
+
 
 gameTime = 20000  # ms how long one round of the game is
 tagDisplayTime = 2000  # ms how long LEDs should show a tag was found
@@ -344,14 +380,14 @@ while True:
 
         # Light up LEDs if tag is found
         if mostRecentTagTime != 0 and runningTime <= (
-            mostRecentTagTime + tagDisplayTime
+                mostRecentTagTime + tagDisplayTime
         ):
             setLEDs(
                 0,
                 1.0,
                 0,
                 ((mostRecentTagTime + tagDisplayTime) - runningTime) / tagDisplayTime,
-            )
+                )
 
     endRun()
 
