@@ -8,6 +8,9 @@ pub struct FlashToMicrobit {
     display: Vec<[[u8; 5]; 5]>,
 }
 
+/// Simple script that kicks off the flash script from the sibling folder
+/// src-microbit. Don't think we will end up relying on this script in the
+/// final version, but I'm keeping it around in case the requirement arises.
 pub fn flash_display_nrf(input: FlashToMicrobit) -> String {
     let target_dir = "../src-microbit/attempts/attempt2.json";
 
