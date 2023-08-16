@@ -1,6 +1,7 @@
 <script>
 	import BluetoothDebugger from '$lib/BluetoothDebugger.svelte'
 	import BluetoothScan from '$lib/BluetoothScan.svelte'
+	// Bluetooth page for debugging bluetooth, when that was a thing
 </script>
 
 <div class="p-10 flex flex-col gap-4">
