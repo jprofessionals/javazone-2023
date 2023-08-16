@@ -95,8 +95,8 @@
 	<h2 class="h3">Write your program here:</h2>
 	<div class="flex w-2/3 gap-2 p-2 bg-slate-700 rounded-xl">
 		<div class="flex flex-col text-slate-300 text-sm leading-6">
-			{#each Array(Math.max(1, numOfLines)) as _num, index}
-				<span class="leading-6">
+			{#each Array(Math.max(1, numOfLines)) as num, index}
+				<span class={`leading-6 ${num}`}>
 					{index + 1}
 				</span>
 			{/each}
