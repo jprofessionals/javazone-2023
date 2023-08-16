@@ -8,7 +8,7 @@ use tokio::time::sleep;
 pub const BAUD_RATE: u32 = 115200;
 
 pub async fn send_instructions_and_await(port_name: String, instructions: String) -> String {
-    let mut port = serialport::new(port_name, BAUD_RATE)
+    let mut port = serialport::new(port_name.clone(), BAUD_RATE)
         .timeout(Duration::from_millis(1000))
         .open()
         .expect("Failed to open port");
