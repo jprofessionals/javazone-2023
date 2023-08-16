@@ -24,6 +24,12 @@
 			<span>Leaderboard</span>
 		</div>
 	</AppRailAnchor>
+	<AppRailAnchor href="/admin" selected={$page.url.pathname === '/admin'}>
+		<div class="flex flex-col">
+			<span class="text-3xl leading-none">⚙️</span>
+			<span>Config</span>
+		</div>
+	</AppRailAnchor>
 	<!-- <AppRailAnchor href="/microbit" selected={$page.url.pathname === '/microbit'}> -->
 	<!-- 	<div class="flex flex-col"> -->
 	<!-- 		<span class="text-3xl leading-none">🤖</span> -->
