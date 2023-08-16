@@ -1,6 +1,7 @@
 <script lang="ts">
 	import cn from '$utils/cn'
-	import { invoke } from '@tauri-apps/api/tauri'
+	import { usbDevice } from './stores'
+	import WebSocket from './WebSocket.svelte'
 
 	const valid_instructions = [
 		'move_forward()j',
@@ -58,6 +59,7 @@
 					byte_value: byte_value[instruction],
 				} as CodeLine
 			} else if (splitLine.length === 1 && splitLine[0].trim() === '') {
+				// Allow whitespace/empty lines
 				return {
 					text: splitLine,
 				} as CodeLine
@@ -69,21 +71,30 @@
 			} as CodeLine
 		})
 
+	let usbDevicePort: string
+	usbDevice.subscribe((val) => {
+		usbDevicePort = val
+	})
+
+	let websocketChild: {
+		send: (msg: string) => Promise<void>
+	}
+	// Send to websocket server the parsed instructions in byte values
 	const sendToBitBot = async () => {
-		console.log(code.filter(({ error }) => error).length)
+		if (usbDevicePort === 'unset') return // Need to set usbdevice before playing
 		if (code.filter(({ error }) => error).length > 0) return
 		const msg = code
 			.filter((line) => line.byte_value !== undefined)
 			.map(({ byte_value }) => byte_value)
 			.join('')
-		await invoke('connect_to_selected_port', { port: '/dev/tty.usbmodem11402', message: msg })
+		await websocketChild.send(`${usbDevicePort};${msg}`)
 	}
 </script>
 
 <div class="flex flex-col gap-10 items-center">
 	<h2 class="h3">Write your program here:</h2>
-	<div class="flex gap-2 p-2 bg-slate-700 rounded-xl">
-		<div class="flex flex-col text-slate-300 text-sm">
+	<div class="flex w-2/3 gap-2 p-2 bg-slate-700 rounded-xl">
+		<div class="flex flex-col text-slate-300 text-sm leading-6">
 			{#each Array(Math.max(1, numOfLines)) as _num, index}
 				<span class="leading-6">
 					{index + 1}
@@ -92,8 +103,9 @@
 		</div>
 		<textarea
 			on:keyup={textareaOnKeyup}
-			class="flex leading-6 px-2 bg-slate-700 text-white border-none outline-none w-full"
+			class="flex leading-6 p-0 bg-slate-700 text-white border-none outline-none w-full"
 			value={currentText}
+			spellcheck="false"
 			rows={15}
 		/>
 		<div class="flex flex-col text-slate-300 text-sm">
@@ -108,4 +120,5 @@
 		</div>
 	</div>
 	<button on:click={sendToBitBot} class="btn variant-filled">Send to bitbot</button>
+	<WebSocket bind:this={websocketChild} />
 </div>
