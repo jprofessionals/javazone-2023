@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
+	import { onDestroy, onMount } from 'svelte'
 	import WebSocket from 'tauri-plugin-websocket-api'
 	import type { Message } from 'tauri-plugin-websocket-api'
 
@@ -17,6 +17,13 @@
 			.catch(console.log)
 		if (!ws) return
 		ws.addListener(onListen)
+	})
+
+	onDestroy(() => {
+		if (ws)
+			ws.disconnect()
+				.then(() => updateLog('disconnected'))
+				.catch(console.log)
 	})
 
 	export async function send(message: Message | string) {
