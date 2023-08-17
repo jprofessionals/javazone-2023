@@ -197,6 +197,10 @@ class PN532:
                         globals.isOnTag = False
                     else:
                         globals.isOnTag = True
+
+                        if response != globals.mostRecentTag:
+                            drive.stop()  # stop the robot and load the next command
+
                         globals.mostRecentTag = response
 
                         if response not in globals.tags:
@@ -238,7 +242,7 @@ class Drive:
     RIGHT_LF = const(0x02)
 
     TORQUE = 300
-    SLOW_TORQUE = 200
+    SLOW_TORQUE = 0
 
     linesPassed = 0
     isOnLine = False
@@ -337,7 +341,15 @@ class Drive:
                 self.state == DriveState.FORWARD
 
     def driveForward(self):
-        pass
+        if self.state == DriveState.READY:
+            self.state = DriveState.FORWARD
+
+        if self.getLinesensorStatus() & self.LEFT_LF:
+            self.adjustMotors(self.SLOW_TORQUE, self.TORQUE)
+        elif self.getLinesensorStatus() & self.RIGHT_LF:
+            self.adjustMotors(self.TORQUE, self.SLOW_TORQUE)
+        else:
+            self.adjustMotors(self.TORQUE, self.TORQUE)
 
     def handleDrive(self, globals):
         if self.state is DriveState.READY:
