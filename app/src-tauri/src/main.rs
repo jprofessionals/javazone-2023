@@ -12,6 +12,7 @@ struct AppState {
     url: Mutex<String>,
 }
 
+use serialport::SerialPortType;
 use tauri::{generate_handler, Builder, Manager};
 
 /// Find all available ports on the computer. Ideally it will find something
@@ -115,6 +116,15 @@ fn main() {
                 // Start window with dev tools open in development
                 let window = app.get_window("main").unwrap();
                 window.open_devtools();
+                let available_ports = serialport::available_ports().expect("To found some ports");
+                let products: Vec<_> = available_ports
+                    .iter()
+                    .filter_map(|info| match &info.port_type {
+                        SerialPortType::UsbPort(usb_info) => usb_info.product.clone(),
+                        _ => None,
+                    })
+                    .collect();
+                println!("{:?}", products);
             }
             Ok(())
         })
