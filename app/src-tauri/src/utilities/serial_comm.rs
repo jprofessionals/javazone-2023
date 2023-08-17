@@ -3,48 +3,50 @@ use std::{
     time::Duration,
 };
 
-use tokio::{sync::broadcast, time::sleep};
+use tokio::time::sleep;
 
-pub const PORT_NAME: &str = "/dev/tty.usbmodem1402";
 pub const BAUD_RATE: u32 = 115200;
 
-pub async fn read_line_from_serial(tx: broadcast::Sender<String>) {
-    let mut port = serialport::new(PORT_NAME, BAUD_RATE)
-        .timeout(Duration::from_millis(00))
+pub async fn send_instructions_and_await(port_name: String, instructions: String) -> String {
+    let mut port = serialport::new(port_name.clone(), BAUD_RATE)
+        .timeout(Duration::from_millis(1000))
         .open()
         .expect("Failed to open port");
 
+    println!(
+        "Writing '{}' to {} at {} baud",
+        &instructions, &port_name, &BAUD_RATE
+    );
+    let _ = port.write(instructions.as_bytes());
     let mut reader = BufReader::new(&mut port);
     let mut line = String::new();
 
     loop {
         match reader.read_line(&mut line) {
-            Ok(_n) => {
-                println!("Read line: {}", line);
-                tx.send(line.trim_end_matches('\n').to_string()).unwrap();
-                line.clear();
+            Ok(_) => {
+                println!("Received data: {}", line.len());
+                if !line.trim_end_matches('\n').is_empty() {
+                    break;
+                }
             }
-            // Most likely a timeout error, ignore this.
-            Err(_e) => {
+            Err(e) => {
+                println!("received error: {:?}", e);
                 continue;
-                //eprintln!("Error: {}", e);
             }
         }
     }
+
+    println!("{}", line);
+    line
 }
 
-pub async fn write_to_serial(port: String, message: String) {
-    let mut port = serialport::new(port, BAUD_RATE)
-        // .data_bits(serialport::DataBits::Eight)
-        // .stop_bits(StopBits::Two)
-        .timeout(Duration::from_millis(100))
+pub async fn send_message(port_name: String, message: String) {
+    let mut port = serialport::new(port_name.clone(), BAUD_RATE)
+        .timeout(Duration::from_millis(1000))
         .open()
         .expect("Failed to open port");
 
     let _ = port.write(message.as_bytes());
 
-    // How  many seconds to keep connection alive for. TODO: Find out how many seconds we need in
-    // order to reliably let bitbot drive around and report back before we "close down" the
-    // connection.
-    sleep(Duration::from_secs(5)).await;
+    sleep(Duration::from_secs(3)).await;
 }

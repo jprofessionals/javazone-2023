@@ -18,29 +18,22 @@
 			<span>Play</span>
 		</div>
 	</AppRailAnchor>
-	<AppRailAnchor href="/ws" selected={$page.url.pathname === '/ws'}>
-		<div class="flex flex-col">
-			<span class="text-3xl leading-none">🎮</span>
-			<span>Play</span>
-		</div>
-	</AppRailAnchor>
 	<AppRailAnchor href="/leaderboard" selected={$page.url.pathname === '/leaderboard'}>
 		<div class="flex flex-col">
 			<span class="text-3xl leading-none">🤩</span>
 			<span>Leaderboard</span>
 		</div>
 	</AppRailAnchor>
-	<AppRailAnchor href="/microbit" selected={$page.url.pathname === '/microbit'}>
+	<AppRailAnchor href="/admin" selected={$page.url.pathname === '/admin'}>
 		<div class="flex flex-col">
-			<span class="text-3xl leading-none">🤖</span>
-			<span>Microbit</span>
+			<span class="text-3xl leading-none">⚙️</span>
+			<span>Config</span>
 		</div>
 	</AppRailAnchor>
-	<svelte:fragment slot="trail">
-		<AppRailAnchor href="/debug" title="Debug" selected={$page.url.pathname === '/debug'}>
-			<div class="flex flex-col">
-				<span class="text-3xl leading-none">🐛</span>
-			</div>
-		</AppRailAnchor>
-	</svelte:fragment>
+	<!-- <AppRailAnchor href="/microbit" selected={$page.url.pathname === '/microbit'}> -->
+	<!-- 	<div class="flex flex-col"> -->
+	<!-- 		<span class="text-3xl leading-none">🤖</span> -->
+	<!-- 		<span>Microbit</span> -->
+	<!-- 	</div> -->
+	<!-- </AppRailAnchor> -->
 </AppRail>

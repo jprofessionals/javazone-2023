@@ -1,18 +1,39 @@
 <script lang="ts">
 	import cn from '$utils/cn'
+	import { onMount } from 'svelte'
+	import type { Score } from './types'
+	import { currentHighScore } from '$lib/stores'
+	import { invoke } from '@tauri-apps/api/tauri'
 
-	const sourceData = [
-		{ name: 'Mario', score: 10, avatar: 'H', username: 'MARIO' },
-		{ name: 'Princess Peach', score: 108, avatar: 'B', username: 'PEACH' },
-		{ name: 'Luigi', score: 40, avatar: 'He', username: 'LUIGI' },
-		{ name: 'Donkey Kong', score: 69, avatar: 'Li', username: 'DNKNG' },
-		{ name: 'Bowser', score: 9, avatar: 'Be', username: 'BWSER' },
+	const sourceData: Score[] = [
+		{ score: 10, player: { username: 'MARIO' } },
+		{ score: 108, player: { username: 'PEACH' } },
+		{ score: 40, player: { username: 'LUIGI' } },
+		{ score: 69, player: { username: 'DNKNG' } },
+		{ score: 9, player: { username: 'BWSER' } },
 	].sort((a, b) => {
 		if (a.score > b.score) return -1
 		if (a.score < b.score) return 1
 		return 0
 	})
 
+	let highScoreData: Score[]
+
+	currentHighScore.subscribe((hs) => {
+		highScoreData = hs
+	})
+
+	onMount(async () => {
+		const scores = (await invoke('get_highscore')) as string
+		try {
+			currentHighScore.set(JSON.parse(scores))
+			console.log(currentHighScore)
+		} catch (e) {
+			console.log(e)
+			currentHighScore.set(sourceData)
+		}
+		console.log(scores)
+	})
 </script>
 
 <svelte:head>
@@ -23,7 +44,7 @@
 	<h1 class="h1">Current Leaderboard</h1>
 
 	<ol class="text-4xl flex flex-col gap-4 bg-black p-10 starry">
-		{#each sourceData as player, index}
+		{#each highScoreData as highscore, index}
 			<li
 				class={cn(
 					'text-white',
@@ -34,9 +55,9 @@
 					'flex gap-10 justify-between pixel-font',
 				)}
 			>
-				<span>{player.username}</span>
+				<span>{highscore.players.username}</span>
 				<!-- Pad the score with 0's -->
-				<span>{String(player.score).padStart(3, '0')}</span>
+				<span>{String(highscore.score).padStart(3, '0')}</span>
 			</li>
 		{/each}
 	</ol>
