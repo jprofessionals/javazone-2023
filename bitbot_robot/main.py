@@ -9,7 +9,14 @@ class Globals:
     def __init__(self):
         self.MAX_MSG_LENGTH = 251
 
-        self.cards = {1057905702: Card(1, True), 1893419794: Card(1, True)}
+        self.cards = {
+            1057905702: Card(1, True),
+            1893419794: Card(1, True),
+            1676494582: Card(1, False),
+            4081897461: Card(1, False),
+            1944446709: Card(1, False),
+            2214546422: Card(1, False),
+        }
         self.gameTime = 20000
         self.tagDisplayTime = 2000
 
@@ -242,13 +249,10 @@ class Drive:
 
     def getLinesensorStatus(self):
         try:
-            sleep(10)
             value = i2c.read(self.LF_ADDRESS, 1)
-            print("linesensorvalue: ", value)
             if value is not None:
                 return value[0] & (self.LEFT_LF | self.RIGHT_LF)
         except OSError:
-            print("linesensor error")
             pass
         return 0
 
@@ -391,10 +395,11 @@ def prepareForCommandsDownload(pn532, drive, globals):
     card = globals.cards.get(globals.mostRecentTag)
     return card and card.isStartPoint
 
+
 def commandsDownload(globals):
     if globals.points != 0:
         globals.points = 0
-        display.scroll('0', wait=False, loop=True)
+        display.scroll("0", wait=False, loop=True)
 
     globals.commands = radio.receive_bytes()
     if globals.commands is None or len(globals.commands) == 0:
