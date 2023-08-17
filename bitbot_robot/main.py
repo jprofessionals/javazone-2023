@@ -425,7 +425,7 @@ def commandsDownload(globals):
         setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
         return False
 
-    globals.commands = "F" + globals.commands  # Always start forward
+    globals.commands = "F" + str(globals.commands, "utf8")  # Always start forward
     return True
 
 
