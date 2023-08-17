@@ -5,6 +5,8 @@
 	import { currentHighScore } from '$lib/stores'
 	import { invoke } from '@tauri-apps/api/tauri'
 
+	import { isConfigSet } from '$lib/stores'
+
 	const sourceData: Score[] = [
 		{ score: 10, player: { username: 'MARIO' } },
 		{ score: 108, player: { username: 'PEACH' } },
@@ -23,16 +25,23 @@
 		highScoreData = hs
 	})
 
+	let configIsSet = false
+	isConfigSet.subscribe((val) => {
+		configIsSet = val
+	})
+
 	onMount(async () => {
-		const scores = (await invoke('get_highscore')) as string
-		try {
-			currentHighScore.set(JSON.parse(scores))
-			console.log(currentHighScore)
-		} catch (e) {
-			console.log(e)
-			currentHighScore.set(sourceData)
+		if (configIsSet) {
+			const scores = (await invoke('get_highscore')) as string
+			try {
+				currentHighScore.set(JSON.parse(scores))
+				console.log(currentHighScore)
+			} catch (e) {
+				console.log(e)
+				currentHighScore.set(sourceData)
+			}
+			console.log(scores)
 		}
-		console.log(scores)
 	})
 </script>
 

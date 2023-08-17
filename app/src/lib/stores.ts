@@ -6,3 +6,5 @@ export const usbDevice = writable('unset')
 export const currentPlayer = writable({} as Player)
 
 export const currentHighScore = writable([] as Score[])
+
+export const isConfigSet = writable(false)
