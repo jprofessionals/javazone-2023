@@ -12,11 +12,18 @@ class Globals:
         self.cards = {
             1057905702: Card(1, True),
             1893419794: Card(1, True),
+            329147126: Card(1, False),
+            866861814: Card(1, False),
+            1664779766: Card(1, False),
             1676494582: Card(1, False),
-            4081897461: Card(1, False),
             1944446709: Card(1, False),
+            2205734389: Card(1, False),
             2214546422: Card(1, False),
+            3543034358: Card(1, False),
+            3554901238: Card(1, False),
+            4081897461: Card(1, False),
         }
+
         self.gameTime = 20000
         self.tagDisplayTime = 2000
 
@@ -338,7 +345,7 @@ class Drive:
 
             if self.linesPassed >= 3:
                 self.adjustMotors(self.TORQUE, self.TORQUE)
-                self.state == DriveState.FORWARD
+                self.state = DriveState.FORWARD
 
     def driveForward(self):
         if self.state == DriveState.READY:
@@ -418,7 +425,7 @@ def commandsDownload(globals):
         setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
         return False
 
-    globals.commands = "F" + globals.commands # Always start forward
+    globals.commands = "F" + globals.commands  # Always start forward
     return True
 
 
