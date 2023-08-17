@@ -5,14 +5,44 @@ import radio
 from microbit import *
 
 
+class Globals:
+    def __init__(self):
+        self.MAX_MSG_LENGTH = 251
+
+        self.cards = {
+            1057905702: Card(1, True),
+            1893419794: Card(1, True),
+            329147126: Card(1, False),
+            866861814: Card(1, False),
+            1664779766: Card(1, False),
+            1676494582: Card(1, False),
+            1944446709: Card(1, False),
+            2205734389: Card(1, False),
+            2214546422: Card(1, False),
+            3543034358: Card(1, False),
+            3554901238: Card(1, False),
+            4081897461: Card(1, False),
+        }
+
+        self.gameTime = 20000
+        self.tagDisplayTime = 2000
+
+        self.tags = set()
+        self.mostRecentTag = 0
+        self.isOnTag = False
+        self.mostRecentTagTime = 0
+
+        self.fireleds = neopixel.NeoPixel(pin13, 12)
+
+        self.commands = ""
+        self.points = 0
+        self.runIsStarted = False
+
+
 class Card:
     def __init__(self, points, isStartPoint):
         self.points = points
         self.isStartPoint = isStartPoint
-
-
-cards = {1057905702: Card(1, False),
-         1893419794: Card(1, False)}
 
 
 class RFIDCom:
@@ -26,21 +56,21 @@ class BusyError(Exception):
 
 
 class PN532:
-    PN532_ADDRESS = const(0x24)
+    PN532_ADDRESS = 0x24
 
-    PREAMBLE = const(0x00)
-    STARTCODE1 = const(0x00)
-    STARTCODE2 = const(0xFF)
-    POSTAMBLE = const(0x00)
+    PREAMBLE = 0x00
+    STARTCODE1 = 0x00
+    STARTCODE2 = 0xFF
+    POSTAMBLE = 0x00
 
-    HOSTTOPN532 = const(0xD4)
-    PN532TOHOST = const(0xD5)
+    HOSTTOPN532 = 0xD4
+    PN532TOHOST = 0xD5
 
-    COMMAND_SAMCONFIGURATION = const(0x14)
-    COMMAND_RFCONFIGURATION = const(0x32)
-    COMMAND_INLISTPASSIVETARGET = const(0x4A)
+    COMMAND_SAMCONFIGURATION = 0x14
+    COMMAND_RFCONFIGURATION = 0x32
+    COMMAND_INLISTPASSIVETARGET = 0x4A
 
-    ISO14443A = const(0x00)
+    ISO14443A = 0x00
 
     ACK = b"\x00\x00\xFF\x00\xFF\x00"
     FRAME_START = b"\x00\x00\xFF"
@@ -99,11 +129,11 @@ class PN532:
         if (frameLen + response[4]) & 0xFF != 0:
             raise RuntimeError("Response length checksum mismatch")
         # Check frame checksum value matches bytes.
-        checksum = sum(response[5: 5 + frameLen + 1]) & 0xFF
+        checksum = sum(response[5 : 5 + frameLen + 1]) & 0xFF
         if checksum != 0:
             raise RuntimeError("Response checksum mismatch:", checksum)
         # Return frame data.
-        return response[5: 5 + frameLen]
+        return response[5 : 5 + frameLen]
 
     def isReady(self):
         return self._i2c.read(self.PN532_ADDRESS, 1) == b"\x01"
@@ -123,16 +153,16 @@ class PN532:
             cardId = cardId * 256 + response[8 + i]
         return cardId
 
-    def handleRFID(self):
+    def handleRFID(self, globals):
         try:
             currentRFIDTime = running_time()
             if currentRFIDTime < (self.previousCommandTime + self.I2C_DELAY):
                 return None
 
             if (
-                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                    and currentRFIDTime
-                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                and currentRFIDTime
+                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -169,20 +199,33 @@ class PN532:
                     response = self.getCardId(
                         self.COMMAND_INLISTPASSIVETARGET, responseLen=19
                     )
-                    if response is not None:
-                        global tags
-                        if response not in tags:
-                            tags.add(response)
-                            global mostRecentTagTime
-                            mostRecentTagTime = currentRFIDTime
-                            print("new card found: ", response)
-                            global cards
-                            global points
-                            if response in cards:
-                                points = points + cards.get(response).points
-                            else:
-                                points = response
-                            display.scroll(str(points), wait=False, loop=True)
+
+                    if response is None:
+                        globals.isOnTag = False
+                    else:
+                        globals.isOnTag = True
+
+                        if response != globals.mostRecentTag:
+                            drive.stop()  # stop the robot and load the next command
+
+                        globals.mostRecentTag = response
+
+                        if response not in globals.tags:
+                            globals.tags.add(response)
+
+                            if globals.runIsStarted:
+                                globals.mostRecentTagTime = currentRFIDTime
+                                print("new card found: ", response)
+                                if response in globals.cards:
+                                    globals.points = (
+                                        globals.points
+                                        + globals.cards.get(response).points
+                                    )
+                                else:
+                                    globals.points = response
+                                display.scroll(
+                                    str(globals.points), wait=False, loop=True
+                                )
                         self.state = RFIDCom.READY
                         return response
                 self.state = RFIDCom.READY
@@ -206,7 +249,7 @@ class Drive:
     RIGHT_LF = const(0x02)
 
     TORQUE = 300
-    SLOW_TORQUE = 200
+    SLOW_TORQUE = 0
 
     linesPassed = 0
     isOnLine = False
@@ -217,13 +260,10 @@ class Drive:
 
     def getLinesensorStatus(self):
         try:
-            sleep(10)
             value = i2c.read(self.LF_ADDRESS, 1)
-            print("linesensorvalue: ", value)
             if value is not None:
                 return value[0] & (self.LEFT_LF | self.RIGHT_LF)
         except OSError:
-            print("linesensor error")
             pass
         return 0
 
@@ -305,18 +345,25 @@ class Drive:
 
             if self.linesPassed >= 3:
                 self.adjustMotors(self.TORQUE, self.TORQUE)
-                self.state == DriveState.FORWARD
+                self.state = DriveState.FORWARD
 
     def driveForward(self):
-        pass
+        if self.state == DriveState.READY:
+            self.state = DriveState.FORWARD
 
-    def handleDrive(self):
+        if self.getLinesensorStatus() & self.LEFT_LF:
+            self.adjustMotors(self.SLOW_TORQUE, self.TORQUE)
+        elif self.getLinesensorStatus() & self.RIGHT_LF:
+            self.adjustMotors(self.TORQUE, self.SLOW_TORQUE)
+        else:
+            self.adjustMotors(self.TORQUE, self.TORQUE)
+
+    def handleDrive(self, globals):
         if self.state is DriveState.READY:
-            global commands
-            if not len(commands):
+            if not len(globals.commands):
                 return False
-            command = commands[0]
-            commands = commands[1:]
+            command = globals.commands[0]
+            globals.commands = globals.commands[1:]
             if command == "L":
                 self.turnLeft()
             elif command == "R":
@@ -336,19 +383,7 @@ class Drive:
         return True
 
 
-gameTime = 20000  # ms how long one round of the game is
-tagDisplayTime = 2000  # ms how long LEDs should show a tag was found
-
-tags = set()
-mostRecentTagTime = 0
-
-fireleds = neopixel.NeoPixel(pin13, 12)
-
-commands = ""
-points = 0
-
-
-def setLEDs(r, g, b, brightness=1.0):
+def setLEDs(fireleds, r, g, b, brightness=1.0):
     for pixel_id in range(0, 11):
         fireleds[pixel_id] = (
             int(255.0 * r * brightness),
@@ -358,73 +393,92 @@ def setLEDs(r, g, b, brightness=1.0):
     fireleds.show()
 
 
-def initializeNextRun():
-    setLEDs(0, 0, 0, 0.0)
-    global tags
-    tags.clear()
-    global mostRecentTagTime
-    mostRecentTagTime = 0
-    global commands
-    commands = "FFFF"
-    global points
-    points = 0
-    display.scroll(str(points), wait=False, loop=True)
+def initializeNextRun(globals):
+    globals.tags.clear()
+    globals.mostRecentTag = 0
+    globals.isOnTag = False
+    globals.mostRecentTagTime = 0
+    globals.commands = ""
+    while radio.receive_bytes() is not None:
+        pass
+    globals.runIsStarted = False
 
 
-def endRun():
-    setLEDs(1.0, 0, 0, 0.5)
-    pass
+def prepareForCommandsDownload(pn532, drive, globals):
+    pn532.handleRFID(globals)
+    placed = globals.isOnTag and drive.getLinesensorStatus() == 0x00
+    if not placed:
+        setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
+        return False
+
+    card = globals.cards.get(globals.mostRecentTag)
+    return card and card.isStartPoint
 
 
-radio.config(channel=7, power=7)
+def commandsDownload(globals):
+    if globals.points != 0:
+        globals.points = 0
+        display.scroll("0", wait=False, loop=True)
+
+    globals.commands = radio.receive_bytes()
+    if globals.commands is None or len(globals.commands) == 0:
+        setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
+        return False
+
+    globals.commands = "F" + str(globals.commands, "utf8")  # Always start forward
+    return True
+
+
+def endRun(globals, drive):
+    setLEDs(globals.fireleds, 1.0, 0, 0, 0.5)
+    drive.stop()
+
+
+globals = Globals()
+
+radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
 radio.on()
 display.on()
-
-# if PN532.PN532_ADDRESS not in i2c.scan():
-#     #display.scroll("PN532 NOT found!!!", wait=True, loop=True)
-#     pass
-# i2c.init()
-
 pn532 = PN532(i2c)
 drive = Drive()
 
 while True:
-    initializeNextRun()
-    currentGameStartTime = running_time()
+    initializeNextRun(globals)
 
-    # previouslyDisplayedRemainingTime = 6
-    # Countdown will start at previouslyDisplayedRemainingTime-1
+    while not prepareForCommandsDownload(pn532, drive, globals) or not commandsDownload(
+        globals
+    ):
+        pass
+
+    setLEDs(globals.fireleds, 0, 0, 0, 0)
+    globals.runIsStarted = True
+    currentGameStartTime = running_time()
 
     while True:
         runningTime = running_time()
 
         # Exit run if it has used up allowed time
-        if runningTime >= (currentGameStartTime + gameTime):
+        if runningTime >= (currentGameStartTime + globals.gameTime):
             break
 
-        # Count down seconds remaining
-        # remainingTime = int(((currentGameStartTime + gameTime)
-        #                 - runningTime) / 1000.0)
-        # if remainingTime < previouslyDisplayedRemainingTime:
-        #   previouslyDisplayedRemainingTime = remainingTime
-        #   display.scroll(remainingTime, wait=False)
+        pn532.handleRFID(globals)
 
-        pn532.handleRFID()
-
-        if not drive.handleDrive():
+        if not drive.handleDrive(globals):
             break
 
         # Light up LEDs if tag is found
-        if mostRecentTagTime != 0 and runningTime <= (
-                mostRecentTagTime + tagDisplayTime
+        if globals.mostRecentTagTime != 0 and runningTime <= (
+            globals.mostRecentTagTime + globals.tagDisplayTime
         ):
             setLEDs(
+                globals.fireleds,
                 0,
                 1.0,
                 0,
-                ((mostRecentTagTime + tagDisplayTime) - runningTime) / tagDisplayTime,
-                )
+                ((globals.mostRecentTagTime + globals.tagDisplayTime) - runningTime)
+                / globals.tagDisplayTime,
+            )
 
-    endRun()
+    endRun(globals, drive)
 
     sleep(5000)
