@@ -1,38 +1,77 @@
-# create-svelte
+# JavaZone 2023 client app
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+> A Tauri application with a SvelteKit frontend
 
-## Creating a project
+This application was developed to be run on our client machines on our stand at JavaZone 2023. It is complemented by a BitBot:XL car that is used to drive around a track of our own design, and in order to communicate with this car through a microbit chip, it was decided to try out Tauri in order to tap into a rich Rust ecosystem for interfacing with the computers hardware.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Getting up and running
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+In order to start developing this application some pre-requisites need to be installed on the computer.
 
-# create a new project in my-app
-npm create svelte@latest my-app
+### Pre-requisites
+
+- Node, I developed with Node 18
+
+Example install with homebrew:
+
+```sh
+  brew install node@18
 ```
 
-## Developing
+Alternative install methods: [Read here](https://nodejs.org/en/download/package-manager)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+- pnpm (A faster package manager than npm. It's blazingly fast ⚡)
 
-```bash
-npm run dev
+Ironically, we can use npm to install pnpm
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```sh
+npm i -g pnpm
 ```
 
-## Building
+- Install node modules. (in root of this project)
 
-To create a production version of your app:
-
-```bash
-npm run build
+```sh
+pnpm install
 ```
 
-You can preview the production build with `npm run preview`.
+- RustLang, install with following shell command:
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+After installing Rust, Cargo (the package manager) should also be installed.
+
+- Tauri CLI, installed with cargo
+
+```sh
+  cargo install tauri-cli
+```
+
+### Developing
+
+Then:
+
+```
+cargo tauri dev
+```
+
+The application should then appear as a separate window
+
+### The stack
+
+Frontend:
+
+- Svelte
+- SvelteKit
+- TypeScript
+- TailwindCSS
+- Skeleton UI
+- Prettier+Eslint
+
+"Backend":
+
+- Rust
+- Tauri
+- Supabase (database for player and score data)
+- Serialport-rs (Library for interfacing with the microbit through serial)
