@@ -10,7 +10,13 @@ In order to start developing this application some pre-requisites need to be ins
 
 ### Pre-requisites
 
-- Node, I developed with Node 18
+- In Debian-based Linux distros, do
+
+```sh
+sudo apt-get install nodejs npm g++ pkg-config libglib2.0-dev libsepol-dev libgtk-3-dev libsoup2.4-dev libjavascriptcoregtk-4.0-dev libwebkit2gtk-4.0-dev libudev-dev
+```
+
+- On Macs, install Node. I developed with Node 18
 
 Example install with homebrew:
 
@@ -50,7 +56,7 @@ After installing Rust, Cargo (the package manager) should also be installed.
 
 ### Developing
 
-Then:
+Then, in src-tauri:
 
 ```
 cargo tauri dev
