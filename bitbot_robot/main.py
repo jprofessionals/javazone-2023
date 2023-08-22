@@ -160,9 +160,9 @@ class PN532:
                 return None
 
             if (
-                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                and currentRFIDTime
-                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                    and currentRFIDTime
+                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -218,8 +218,8 @@ class PN532:
                                 print("new card found: ", response)
                                 if response in globals.cards:
                                     globals.points = (
-                                        globals.points
-                                        + globals.cards.get(response).points
+                                            globals.points
+                                            + globals.cards.get(response).points
                                     )
                                 else:
                                     globals.points = response
@@ -248,10 +248,16 @@ class Drive:
     LEFT_LF = const(0x01)
     RIGHT_LF = const(0x02)
 
-    TORQUE = 300
+    TORQUE = 400
+    TURN_TORQUE = 250
     SLOW_TORQUE = 0
 
+    MINIMUM_TURN_TIME = 300 # ms Ikke i bruk lengre
+    EXPECTED_TURN_TIME = 440 # ms
+    EXPECTED_U_TURN_TIME = 1000 # ms
+
     linesPassed = 0
+    startedTurning = 0
     isOnLine = False
 
     def __init__(self):
@@ -295,21 +301,29 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_LEFT
-            self.adjustMotors(0, self.TORQUE)
+            self.adjustMotors(0, self.TURN_TORQUE)
+            self.startedTurning = running_time()
         elif self.state == DriveState.TURNING_LEFT:
             self.keepTurning(self.LEFT_LF)
 
     def keepTurning(self, direction):
         status = self.getLinesensorStatus()
-        if self.isOnLine:
-            if not (status & direction):
-                self.linesPassed += 1
-                self.isOnLine = False
-        elif status & direction:
-            self.isOnLine = True
-        if self.linesPassed >= 2:
+        # if self.isOnLine:
+        #     if not (status & direction):
+        #         if self.linesPassed<1 or running_time() - self.startedTurning > self.MINIMUM_TURN_TIME:
+        #             self.linesPassed += 1
+        #         self.isOnLine = False
+        # elif status & direction:
+        #     self.isOnLine = True
+        # if self.linesPassed >= 2:
+        if status & direction and running_time() - self.startedTurning > self.EXPECTED_TURN_TIME:
             self.adjustMotors(self.TORQUE, self.TORQUE)
             self.state = DriveState.FORWARD
+            if(direction== self.LEFT_LF):
+                dircode="L"
+            else:
+                dircode="R"
+            radio.send(dircode+": " + str(running_time() - self.startedTurning))
 
     def turnRight(self):
         if self.state == DriveState.READY:
@@ -320,32 +334,36 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_RIGHT
-            self.adjustMotors(self.TORQUE, 0)
+            self.adjustMotors(self.TURN_TORQUE, 0)
+            self.startedTurning = running_time()
         elif self.state == DriveState.TURNING_RIGHT:
             self.keepTurning(self.RIGHT_LF)
 
     def turn180(self):
         if self.state == DriveState.READY:
+            self.startedTurning = running_time()
             if self.getLinesensorStatus() & self.LEFT_LF:
                 self.linesPassed = 0
                 self.isOnLine = True
             else:
                 self.linesPassed = 1
                 self.isOnLine = False
-                self.adjustMotors(-self.TORQUE, self.TORQUE)
+            self.adjustMotors(-self.TURN_TORQUE, self.TURN_TORQUE)
             self.state = DriveState.TURNING_AROUND
         elif self.state == DriveState.TURNING_AROUND:
             status = self.getLinesensorStatus()
-            if self.isOnLine:
-                if not (status & self.LEFT_LF):
-                    self.linesPassed += 1
-                    self.isOnLine = False
-            elif status & self.LEFT_LF:
-                self.isOnLine = True
-
-            if self.linesPassed >= 3:
+            # if self.isOnLine:
+            #     if not (status & self.LEFT_LF):
+            #         self.linesPassed += 1
+            #         self.isOnLine = False
+            # elif status & self.LEFT_LF:
+            #     self.isOnLine = True
+            #
+            # if self.linesPassed >= 3:
+            if status & self.LEFT_LF and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME:
                 self.adjustMotors(self.TORQUE, self.TORQUE)
                 self.state = DriveState.FORWARD
+                radio.send("U: " + str(running_time() - self.startedTurning))
 
     def driveForward(self):
         if self.state == DriveState.READY:
@@ -432,6 +450,7 @@ def commandsDownload(globals):
 def endRun(globals, drive):
     setLEDs(globals.fireleds, 1.0, 0, 0, 0.5)
     drive.stop()
+    radio.send(str(globals.points))
 
 
 globals = Globals()
@@ -442,43 +461,45 @@ display.on()
 pn532 = PN532(i2c)
 drive = Drive()
 
+
 while True:
     initializeNextRun(globals)
 
     while not prepareForCommandsDownload(pn532, drive, globals) or not commandsDownload(
-        globals
+            globals
     ):
         pass
 
     setLEDs(globals.fireleds, 0, 0, 0, 0)
     globals.runIsStarted = True
     currentGameStartTime = running_time()
+    try:
+        while True:
+            runningTime = running_time()
 
-    while True:
-        runningTime = running_time()
+            # Exit run if it has used up allowed time
+            if runningTime >= (currentGameStartTime + globals.gameTime):
+                break
 
-        # Exit run if it has used up allowed time
-        if runningTime >= (currentGameStartTime + globals.gameTime):
-            break
+            pn532.handleRFID(globals)
 
-        pn532.handleRFID(globals)
+            if not drive.handleDrive(globals):
+                break
 
-        if not drive.handleDrive(globals):
-            break
-
-        # Light up LEDs if tag is found
-        if globals.mostRecentTagTime != 0 and runningTime <= (
-            globals.mostRecentTagTime + globals.tagDisplayTime
-        ):
-            setLEDs(
-                globals.fireleds,
-                0,
-                1.0,
-                0,
-                ((globals.mostRecentTagTime + globals.tagDisplayTime) - runningTime)
-                / globals.tagDisplayTime,
-            )
-
+            # Light up LEDs if tag is found
+            if globals.mostRecentTagTime != 0 and runningTime <= (
+                    globals.mostRecentTagTime + globals.tagDisplayTime
+            ):
+                setLEDs(
+                    globals.fireleds,
+                    0,
+                    1.0,
+                    0,
+                    ((globals.mostRecentTagTime + globals.tagDisplayTime) - runningTime)
+                    / globals.tagDisplayTime,
+                    )
+    except (Exception):
+        display.show(Image.SKULL)
     endRun(globals, drive)
 
     sleep(5000)
