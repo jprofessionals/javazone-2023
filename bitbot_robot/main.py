@@ -10,22 +10,22 @@ class Globals:
         self.MAX_MSG_LENGTH = 251
 
         self.cards = {
-            1057905702: Card(1, True),
-            1893419794: Card(1, True),
-            329147126: Card(1, False),
-            866861814: Card(1, False),
-            1664779766: Card(1, False),
-            1676494582: Card(1, False),
-            1944446709: Card(1, False),
-            2205734389: Card(1, False),
-            2214546422: Card(1, False),
-            3543034358: Card(1, False),
-            3554901238: Card(1, False),
-            4081897461: Card(1, False),
+            1057905702: Card(1),
+            1893419794: Card(1),
+            329147126: Card(1),
+            866861814: Card(1),
+            1664779766: Card(1),
+            1676494582: Card(1),
+            1944446709: Card(1),
+            2205734389: Card(1),
+            2214546422: Card(1),
+            3543034358: Card(1),
+            3554901238: Card(1),
+            4081897461: Card(1)
         }
 
         self.gameTime = 20000
-        self.tagDisplayTime = 2000
+        self.tagDisplayTime = 500
 
         self.tags = set()
         self.mostRecentTag = 0
@@ -40,9 +40,8 @@ class Globals:
 
 
 class Card:
-    def __init__(self, points, isStartPoint):
+    def __init__(self, points):
         self.points = points
-        self.isStartPoint = isStartPoint
 
 
 class RFIDCom:
@@ -160,9 +159,9 @@ class PN532:
                 return None
 
             if (
-                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                    and currentRFIDTime
-                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                and currentRFIDTime
+                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -218,8 +217,8 @@ class PN532:
                                 print("new card found: ", response)
                                 if response in globals.cards:
                                     globals.points = (
-                                            globals.points
-                                            + globals.cards.get(response).points
+                                        globals.points
+                                        + globals.cards.get(response).points
                                     )
                                 else:
                                     globals.points = response
@@ -252,9 +251,9 @@ class Drive:
     TURN_TORQUE = 250
     SLOW_TORQUE = 0
 
-    MINIMUM_TURN_TIME = 300 # ms Ikke i bruk lengre
-    EXPECTED_TURN_TIME = 440 # ms
-    EXPECTED_U_TURN_TIME = 1000 # ms
+    MINIMUM_TURN_TIME = 300  # ms Ikke i bruk lengre
+    EXPECTED_TURN_TIME = 440  # ms
+    EXPECTED_U_TURN_TIME = 1000  # ms
 
     linesPassed = 0
     startedTurning = 0
@@ -310,20 +309,24 @@ class Drive:
         status = self.getLinesensorStatus()
         # if self.isOnLine:
         #     if not (status & direction):
-        #         if self.linesPassed<1 or running_time() - self.startedTurning > self.MINIMUM_TURN_TIME:
+        #         if self.linesPassed<1 or running_time() - self.startedTurning >
+        #            self.MINIMUM_TURN_TIME:
         #             self.linesPassed += 1
         #         self.isOnLine = False
         # elif status & direction:
         #     self.isOnLine = True
         # if self.linesPassed >= 2:
-        if status & direction and running_time() - self.startedTurning > self.EXPECTED_TURN_TIME:
+        if (
+            status & direction
+            and running_time() - self.startedTurning > self.EXPECTED_TURN_TIME
+        ):
             self.adjustMotors(self.TORQUE, self.TORQUE)
             self.state = DriveState.FORWARD
-            if(direction== self.LEFT_LF):
-                dircode="L"
+            if direction == self.LEFT_LF:
+                dircode = "L"
             else:
-                dircode="R"
-            radio.send(dircode+": " + str(running_time() - self.startedTurning))
+                dircode = "R"
+            radio.send(dircode + ": " + str(running_time() - self.startedTurning))
 
     def turnRight(self):
         if self.state == DriveState.READY:
@@ -360,7 +363,10 @@ class Drive:
             #     self.isOnLine = True
             #
             # if self.linesPassed >= 3:
-            if status & self.LEFT_LF and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME:
+            if (
+                status & self.LEFT_LF
+                and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME
+            ):
                 self.adjustMotors(self.TORQUE, self.TORQUE)
                 self.state = DriveState.FORWARD
                 radio.send("U: " + str(running_time() - self.startedTurning))
@@ -401,17 +407,18 @@ class Drive:
         return True
 
 
-def setLEDs(fireleds, r, g, b, brightness=1.0):
-    for pixel_id in range(0, 11):
-        fireleds[pixel_id] = (
+def setLEDs(fireleds, r, g, b, brightness=1.0, count=6):
+    for pixel_id in range(min(6, count)):
+        fireleds[pixel_id] = fireleds[pixel_id + 6] = (
             int(255.0 * r * brightness),
             int(255.0 * g * brightness),
-            int(255.0 * b * brightness),
+            int(255.0 * b * brightness)
         )
     fireleds.show()
 
 
-def initializeNextRun(globals):
+def initializeNextRun(globals, drive):
+    drive.stop()
     globals.tags.clear()
     globals.mostRecentTag = 0
     globals.isOnTag = False
@@ -429,8 +436,7 @@ def prepareForCommandsDownload(pn532, drive, globals):
         setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
         return False
 
-    card = globals.cards.get(globals.mostRecentTag)
-    return card and card.isStartPoint
+    return globals.cards.get(globals.mostRecentTag)
 
 
 def commandsDownload(globals):
@@ -448,7 +454,6 @@ def commandsDownload(globals):
 
 
 def endRun(globals, drive):
-    setLEDs(globals.fireleds, 1.0, 0, 0, 0.5)
     drive.stop()
     radio.send(str(globals.points))
 
@@ -463,10 +468,10 @@ drive = Drive()
 
 
 while True:
-    initializeNextRun(globals)
+    initializeNextRun(globals, drive)
 
     while not prepareForCommandsDownload(pn532, drive, globals) or not commandsDownload(
-            globals
+        globals
     ):
         pass
 
@@ -488,8 +493,12 @@ while True:
 
             # Light up LEDs if tag is found
             if globals.mostRecentTagTime != 0 and runningTime <= (
-                    globals.mostRecentTagTime + globals.tagDisplayTime
+                globals.mostRecentTagTime + globals.tagDisplayTime
             ):
+                tagPoints = 0
+                if globals.mostRecentTag in globals.cards:
+                    tagPoints = globals.cards.get(globals.mostRecentTag).points
+
                 setLEDs(
                     globals.fireleds,
                     0,
@@ -497,9 +506,8 @@ while True:
                     0,
                     ((globals.mostRecentTagTime + globals.tagDisplayTime) - runningTime)
                     / globals.tagDisplayTime,
-                    )
+                    2 + tagPoints
+                )
     except (Exception):
         display.show(Image.SKULL)
     endRun(globals, drive)
-
-    sleep(5000)
