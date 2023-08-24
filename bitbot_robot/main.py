@@ -407,7 +407,7 @@ def initializeNextRun(globals, drive):
 
 def prepareForCommandsDownload(pn532, drive, globals):
     pn532.handleRFID(globals)
-    placed = globals.isOnTag and drive.getLinesensorStatus() == 0x00
+    placed = globals.isOnTag #and drive.getLinesensorStatus() == 0x00
     if not placed:
         setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
         return False
