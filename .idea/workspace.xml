@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2U3cZyH5T74SDONdsUipLQf6uJI" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;pnpm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="" />
+      <created>1692171763648</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1692171763648</updated>
+      <workItem from="1692171764998" duration="13547000" />
+      <workItem from="1692699030636" duration="599000" />
+      <workItem from="1692702318040" duration="4397000" />
+    </task>
+    <task id="LOCAL−00001" summary="Vi svinger oss til høyre og venstre!">
+      <created>1692175756962</created>
+      <option name="number" value="LOCAL−00001" />
+      <option name="presentableId" value="LOCAL−00001" />
+      <updated>1692175756962</updated>
+    </task>
+    <task id="LOCAL−00002" summary="Litt feiljustering">
+      <created>1692176455503</created>
+      <option name="number" value="LOCAL−00002" />
+      <option name="presentableId" value="LOCAL−00002" />
+      <updated>1692176455503</updated>
+    </task>
+    <task id="LOCAL−00003" summary="i2c.scan kommentert ut">
+      <created>1692186020382</created>
+      <option name="number" value="LOCAL−00003" />
+      <option name="presentableId" value="LOCAL−00003" />
+      <updated>1692186020382</updated>
+    </task>
+    <task id="LOCAL−00004" summary="i2c.scan kommentert ut">
+      <created>1692186043376</created>
+      <option name="number" value="LOCAL−00004" />
+      <option name="presentableId" value="LOCAL−00004" />
+      <updated>1692186043376</updated>
+    </task>
+    <task id="LOCAL−00005" summary="kode som kjører bra på bane">
+      <created>1692262012907</created>
+      <option name="number" value="LOCAL−00005" />
+      <option name="presentableId" value="LOCAL−00005" />
+      <updated>1692262012907</updated>
+    </task>
+    <task id="LOCAL−00006" summary="Tilpasser svinger utifra timing og ikke linjetelling.">
+      <created>1692702486879</created>
+      <option name="number" value="LOCAL−00006" />
+      <option name="presentableId" value="LOCAL−00006" />
+      <updated>1692702486879</updated>
+    </task>
+    <task id="LOCAL−00007" summary="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort.">
+      <created>1692859916661</created>
+      <option name="number" value="LOCAL−00007" />
+      <option name="presentableId" value="LOCAL−00007" />
+      <updated>1692859916661</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Vi svinger oss til høyre og venstre!" />
+    <MESSAGE value="Litt feiljustering" />
+    <MESSAGE value="i2c.scan kommentert ut med fungerende svinging" />
+    <MESSAGE value="i2c.scan kommentert ut" />
+    <MESSAGE value="kode som kjører bra på bane" />
+    <MESSAGE value="Tilpasser svinger utifra timing og ikke linjetelling." />
+    <MESSAGE value="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
+    <option name="LAST_COMMIT_MESSAGE" value="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
+  </component>
+</project>

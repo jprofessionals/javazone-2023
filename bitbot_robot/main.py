@@ -205,6 +205,8 @@ class PN532:
                         globals.isOnTag = True
 
                         if response != globals.mostRecentTag:
+                            #send the tag to the server
+                            radio.send(str(response))
                             drive.stop()  # stop the robot and load the next command
 
                         globals.mostRecentTag = response
@@ -251,9 +253,8 @@ class Drive:
     TURN_TORQUE = 250
     SLOW_TORQUE = 0
 
-    MINIMUM_TURN_TIME = 300  # ms Ikke i bruk lengre
-    EXPECTED_TURN_TIME = 440  # ms
-    EXPECTED_U_TURN_TIME = 1000  # ms
+    EXPECTED_TURN_TIME = 440 # ms
+    EXPECTED_U_TURN_TIME = 1000 # ms
 
     linesPassed = 0
     startedTurning = 0
@@ -307,26 +308,10 @@ class Drive:
 
     def keepTurning(self, direction):
         status = self.getLinesensorStatus()
-        # if self.isOnLine:
-        #     if not (status & direction):
-        #         if self.linesPassed<1 or running_time() - self.startedTurning >
-        #            self.MINIMUM_TURN_TIME:
-        #             self.linesPassed += 1
-        #         self.isOnLine = False
-        # elif status & direction:
-        #     self.isOnLine = True
-        # if self.linesPassed >= 2:
-        if (
-            status & direction
-            and running_time() - self.startedTurning > self.EXPECTED_TURN_TIME
-        ):
+        if status & direction and running_time() - self.startedTurning > self.EXPECTED_TURN_TIME:
             self.adjustMotors(self.TORQUE, self.TORQUE)
             self.state = DriveState.FORWARD
-            if direction == self.LEFT_LF:
-                dircode = "L"
-            else:
-                dircode = "R"
-            radio.send(dircode + ": " + str(running_time() - self.startedTurning))
+
 
     def turnRight(self):
         if self.state == DriveState.READY:
@@ -355,21 +340,12 @@ class Drive:
             self.state = DriveState.TURNING_AROUND
         elif self.state == DriveState.TURNING_AROUND:
             status = self.getLinesensorStatus()
-            # if self.isOnLine:
-            #     if not (status & self.LEFT_LF):
-            #         self.linesPassed += 1
-            #         self.isOnLine = False
-            # elif status & self.LEFT_LF:
-            #     self.isOnLine = True
-            #
-            # if self.linesPassed >= 3:
             if (
                 status & self.LEFT_LF
                 and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME
             ):
                 self.adjustMotors(self.TORQUE, self.TORQUE)
                 self.state = DriveState.FORWARD
-                radio.send("U: " + str(running_time() - self.startedTurning))
 
     def driveForward(self):
         if self.state == DriveState.READY:
@@ -449,13 +425,13 @@ def commandsDownload(globals):
         setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
         return False
 
-    globals.commands = "F" + str(globals.commands, "utf8")  # Always start forward
+    globals.commands = "" + str(globals.commands, "utf8")
     return True
 
 
 def endRun(globals, drive):
     drive.stop()
-    radio.send(str(globals.points))
+    radio.send(str("RUN_END"))
 
 
 globals = Globals()
@@ -481,8 +457,6 @@ while True:
     try:
         while True:
             runningTime = running_time()
-
-            # Exit run if it has used up allowed time
             if runningTime >= (currentGameStartTime + globals.gameTime):
                 break
 
@@ -490,8 +464,6 @@ while True:
 
             if not drive.handleDrive(globals):
                 break
-
-            # Light up LEDs if tag is found
             if globals.mostRecentTagTime != 0 and runningTime <= (
                 globals.mostRecentTagTime + globals.tagDisplayTime
             ):
