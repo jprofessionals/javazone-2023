@@ -10,18 +10,31 @@ class Globals:
         self.MAX_MSG_LENGTH = 251
 
         self.cards = {
-            1057905702: Card(1),
-            1893419794: Card(1),
-            329147126: Card(1),
-            866861814: Card(1),
-            1664779766: Card(1),
-            1676494582: Card(1),
+            1944688892: Card(1),
+            2214546422: Card(2),
+            3287137276: Card(3),
+            871609077: Card(0),
+            4081897461: Card(1),
+            3004060668: Card(2),
             1944446709: Card(1),
-            2205734389: Card(1),
-            2214546422: Card(1),
-            3543034358: Card(1),
-            3554901238: Card(1),
-            4081897461: Card(1)
+            1676494582: Card(-2),
+            329147126: Card(1),
+            3543034358: Card(2),
+            601800188: Card(-3),
+            864110588: Card(2),
+            3010023420: Card(1),
+            2481922550: Card(2),
+            2735262972: Card(1),
+            3813451004: Card(1),
+            3019725814: Card(1),
+            1667070454: Card(1),
+            868100604: Card(2),
+            3278031868: Card(-1),
+            869677308: Card(6),
+            3279192572: Card(2),
+            2212260348: Card(1),
+            1945225468: Card(1),
+            1664226294: Card(1)
         }
 
         self.gameTime = 20000
@@ -407,12 +420,11 @@ def initializeNextRun(globals, drive):
 
 def prepareForCommandsDownload(pn532, drive, globals):
     pn532.handleRFID(globals)
-    placed = globals.isOnTag #and drive.getLinesensorStatus() == 0x00
+    placed = globals.isOnTag
     if not placed:
         setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
-        return False
 
-    return globals.cards.get(globals.mostRecentTag)
+    return placed
 
 
 def commandsDownload(globals):
@@ -425,7 +437,7 @@ def commandsDownload(globals):
         setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
         return False
 
-    globals.commands = "" + str(globals.commands, "utf8")
+    globals.commands = str(globals.commands, "utf8")
     return True
 
 
