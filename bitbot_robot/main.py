@@ -218,7 +218,7 @@ class PN532:
                         globals.isOnTag = True
 
                         if response != globals.mostRecentTag:
-                            #send the tag to the server
+                            # send the tag to the server
                             radio.send(str(response))
                             drive.stop()  # stop the robot and load the next command
 
@@ -266,8 +266,8 @@ class Drive:
     TURN_TORQUE = 250
     SLOW_TORQUE = 0
 
-    EXPECTED_TURN_TIME = 440 # ms
-    EXPECTED_U_TURN_TIME = 1000 # ms
+    EXPECTED_TURN_TIME = 440  # ms
+    EXPECTED_U_TURN_TIME = 1000  # ms
 
     linesPassed = 0
     startedTurning = 0
@@ -321,10 +321,12 @@ class Drive:
 
     def keepTurning(self, direction):
         status = self.getLinesensorStatus()
-        if status & direction and running_time() - self.startedTurning > self.EXPECTED_TURN_TIME:
+        if (
+            (status & direction)
+            and (running_time() - self.startedTurning) > self.EXPECTED_TURN_TIME
+        ):
             self.adjustMotors(self.TORQUE, self.TORQUE)
             self.state = DriveState.FORWARD
-
 
     def turnRight(self):
         if self.state == DriveState.READY:
@@ -377,7 +379,9 @@ class Drive:
                 return False
             command = globals.commands[0]
             globals.commands = globals.commands[1:]
-            if command == "L":
+            if command == "S":
+                globals.tags.clear()
+            elif command == "L":
                 self.turnLeft()
             elif command == "R":
                 self.turnRight()
@@ -408,7 +412,6 @@ def setLEDs(fireleds, r, g, b, brightness=1.0, count=6):
 
 def initializeNextRun(globals, drive):
     drive.stop()
-    globals.tags.clear()
     globals.mostRecentTag = 0
     globals.isOnTag = False
     globals.mostRecentTagTime = 0
@@ -483,14 +486,20 @@ while True:
                 if globals.mostRecentTag in globals.cards:
                     tagPoints = globals.cards.get(globals.mostRecentTag).points
 
+                r = 0.0
+                g = 1.0
+                if tagPoints < 0:
+                    r = 1.0
+                    g = 0.0
+
                 setLEDs(
                     globals.fireleds,
-                    0,
-                    1.0,
+                    r,
+                    g,
                     0,
                     ((globals.mostRecentTagTime + globals.tagDisplayTime) - runningTime)
                     / globals.tagDisplayTime,
-                    2 + tagPoints
+                    2 + abs(tagPoints)
                 )
     except (Exception):
         display.show(Image.SKULL)
