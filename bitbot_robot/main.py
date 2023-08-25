@@ -381,6 +381,8 @@ class Drive:
             globals.commands = globals.commands[1:]
             if command == "S":
                 globals.tags.clear()
+                globals.points = 0
+                display.scroll("0", wait=False, loop=True)
             elif command == "L":
                 self.turnLeft()
             elif command == "R":
@@ -431,10 +433,6 @@ def prepareForCommandsDownload(pn532, drive, globals):
 
 
 def commandsDownload(globals):
-    if globals.points != 0:
-        globals.points = 0
-        display.scroll("0", wait=False, loop=True)
-
     globals.commands = radio.receive_bytes()
     if globals.commands is None or len(globals.commands) == 0:
         setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
@@ -474,6 +472,9 @@ while True:
             runningTime = running_time()
             if runningTime >= (currentGameStartTime + globals.gameTime):
                 break
+
+            # if pin1.read_analog() <= 1:
+            #    break
 
             pn532.handleRFID(globals)
 
