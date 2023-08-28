@@ -54,6 +54,8 @@
 		"clsx": "^2.0.0",
 		"highlight.js": "^11.8.0",
 		"tailwind-merge": "^1.14.0",
-		"tauri-plugin-websocket-api": "github:tauri-apps/tauri-plugin-websocket#v1"
+		"tauri-plugin-websocket-api": "github:tauri-apps/tauri-plugin-websocket#v1",
+		"vite-test-utils": "^0.6.0",
+		"vitest": "^0.34.3"
 	}
 }
