@@ -51,6 +51,8 @@ class Globals:
         self.points = 0
         self.runIsStarted = False
 
+        self.useCollisionDetection = True
+
 
 class Card:
     def __init__(self, points):
@@ -450,6 +452,9 @@ def endRun(globals, drive):
 
 globals = Globals()
 
+if button_a.is_pressed() or button_b.is_pressed():
+    globals.useCollisionDetection = False
+
 radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
 radio.on()
 display.on()
@@ -474,8 +479,8 @@ while True:
             if runningTime >= (currentGameStartTime + globals.gameTime):
                 break
 
-            # if pin1.read_analog() <= 1:
-            #    break
+            if globals.useCollisionDetection and pin1.read_digital() == 0:
+                break
 
             pn532.handleRFID(globals)
 
