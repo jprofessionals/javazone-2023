@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
+    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,6 +38,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -49,7 +52,8 @@
       <updated>1692171763648</updated>
       <workItem from="1692171764998" duration="13547000" />
       <workItem from="1692699030636" duration="599000" />
-      <workItem from="1692702318040" duration="4397000" />
+      <workItem from="1692702318040" duration="9398000" />
+      <workItem from="1692953652613" duration="121000" />
     </task>
     <task id="LOCAL−00001" summary="Vi svinger oss til høyre og venstre!">
       <created>1692175756962</created>
@@ -98,6 +102,17 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Vi svinger oss til høyre og venstre!" />

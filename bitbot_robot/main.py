@@ -264,6 +264,7 @@ class Drive:
 
     TORQUE = 400
     TURN_TORQUE = 250
+    SLOW_TURN_TORQUE = 200
     SLOW_TORQUE = 0
 
     EXPECTED_TURN_TIME = 440  # ms
@@ -314,7 +315,7 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_LEFT
-            self.adjustMotors(0, self.TURN_TORQUE)
+            self.adjustMotors(-self.SLOW_TURN_TORQUE, self.TURN_TORQUE)
             self.startedTurning = running_time()
         elif self.state == DriveState.TURNING_LEFT:
             self.keepTurning(self.LEFT_LF)
@@ -337,7 +338,7 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_RIGHT
-            self.adjustMotors(self.TURN_TORQUE, 0)
+            self.adjustMotors(self.TURN_TORQUE, -self.SLOW_TURN_TORQUE)
             self.startedTurning = running_time()
         elif self.state == DriveState.TURNING_RIGHT:
             self.keepTurning(self.RIGHT_LF)
