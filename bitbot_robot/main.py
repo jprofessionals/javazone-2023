@@ -264,7 +264,7 @@ class Drive:
 
     TORQUE = 400
     TURN_TORQUE = 250
-    SLOW_TURN_TORQUE = 200
+    SLOW_TURN_TORQUE = 0
     SLOW_TORQUE = 0
 
     EXPECTED_TURN_TIME = 440  # ms
