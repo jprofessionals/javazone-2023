@@ -37,7 +37,7 @@ class Globals:
             1664226294: Card(1)
         }
 
-        self.gameTime = 20000
+        self.game_timeout = 4000
         self.tagDisplayTime = 500
 
         self.tags = set()
@@ -50,6 +50,8 @@ class Globals:
         self.commands = ""
         self.points = 0
         self.runIsStarted = False
+
+        self.useCollisionDetection = True
 
 
 class Card:
@@ -141,11 +143,11 @@ class PN532:
         if (frameLen + response[4]) & 0xFF != 0:
             raise RuntimeError("Response length checksum mismatch")
         # Check frame checksum value matches bytes.
-        checksum = sum(response[5 : 5 + frameLen + 1]) & 0xFF
+        checksum = sum(response[5: 5 + frameLen + 1]) & 0xFF
         if checksum != 0:
             raise RuntimeError("Response checksum mismatch:", checksum)
         # Return frame data.
-        return response[5 : 5 + frameLen]
+        return response[5: 5 + frameLen]
 
     def isReady(self):
         return self._i2c.read(self.PN532_ADDRESS, 1) == b"\x01"
@@ -172,9 +174,9 @@ class PN532:
                 return None
 
             if (
-                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                and currentRFIDTime
-                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                    and currentRFIDTime
+                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -232,8 +234,8 @@ class PN532:
                                 print("new card found: ", response)
                                 if response in globals.cards:
                                     globals.points = (
-                                        globals.points
-                                        + globals.cards.get(response).points
+                                            globals.points
+                                            + globals.cards.get(response).points
                                     )
                                 else:
                                     globals.points = response
@@ -264,6 +266,7 @@ class Drive:
 
     TORQUE = 400
     TURN_TORQUE = 250
+    SLOW_TURN_TORQUE = 0
     SLOW_TORQUE = 0
 
     EXPECTED_TURN_TIME = 440  # ms
@@ -314,7 +317,7 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_LEFT
-            self.adjustMotors(0, self.TURN_TORQUE)
+            self.adjustMotors(-self.SLOW_TURN_TORQUE, self.TURN_TORQUE)
             self.startedTurning = running_time()
         elif self.state == DriveState.TURNING_LEFT:
             self.keepTurning(self.LEFT_LF)
@@ -322,8 +325,8 @@ class Drive:
     def keepTurning(self, direction):
         status = self.getLinesensorStatus()
         if (
-            (status & direction)
-            and (running_time() - self.startedTurning) > self.EXPECTED_TURN_TIME
+                (status & direction)
+                and (running_time() - self.startedTurning) > self.EXPECTED_TURN_TIME
         ):
             self.adjustMotors(self.TORQUE, self.TORQUE)
             self.state = DriveState.FORWARD
@@ -337,7 +340,7 @@ class Drive:
                 self.linesPassed = 1
                 self.isOnLine = False
             self.state = DriveState.TURNING_RIGHT
-            self.adjustMotors(self.TURN_TORQUE, 0)
+            self.adjustMotors(self.TURN_TORQUE, -self.SLOW_TURN_TORQUE)
             self.startedTurning = running_time()
         elif self.state == DriveState.TURNING_RIGHT:
             self.keepTurning(self.RIGHT_LF)
@@ -356,8 +359,8 @@ class Drive:
         elif self.state == DriveState.TURNING_AROUND:
             status = self.getLinesensorStatus()
             if (
-                status & self.LEFT_LF
-                and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME
+                    status & self.LEFT_LF
+                    and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME
             ):
                 self.adjustMotors(self.TORQUE, self.TORQUE)
                 self.state = DriveState.FORWARD
@@ -449,39 +452,41 @@ def endRun(globals, drive):
 
 globals = Globals()
 
+if button_a.is_pressed() or button_b.is_pressed():
+    globals.useCollisionDetection = False
+
 radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
 radio.on()
 display.on()
 pn532 = PN532(i2c)
 drive = Drive()
 
-
 while True:
     initializeNextRun(globals, drive)
 
     while not prepareForCommandsDownload(pn532, drive, globals) or not commandsDownload(
-        globals
+            globals
     ):
         pass
 
     setLEDs(globals.fireleds, 0, 0, 0, 0)
     globals.runIsStarted = True
-    currentGameStartTime = running_time()
+    globals.mostRecentTagTime = running_time()
     try:
         while True:
             runningTime = running_time()
-            if runningTime >= (currentGameStartTime + globals.gameTime):
+            if runningTime >= (globals.mostRecentTagTime + globals.game_timeout):
                 break
 
-            # if pin1.read_analog() <= 1:
-            #    break
+            if globals.useCollisionDetection and pin1.read_digital() == 0:
+                break
 
             pn532.handleRFID(globals)
 
             if not drive.handleDrive(globals):
                 break
             if globals.mostRecentTagTime != 0 and runningTime <= (
-                globals.mostRecentTagTime + globals.tagDisplayTime
+                    globals.mostRecentTagTime + globals.tagDisplayTime
             ):
                 tagPoints = 0
                 if globals.mostRecentTag in globals.cards:
