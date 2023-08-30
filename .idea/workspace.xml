@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort.">
+    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="Justering av svingealgoritme; bruker kun ett hjul">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -54,6 +54,8 @@
       <workItem from="1692699030636" duration="599000" />
       <workItem from="1692702318040" duration="9398000" />
       <workItem from="1692953652613" duration="121000" />
+      <workItem from="1693297947572" duration="370000" />
+      <workItem from="1693298951843" duration="3026000" />
     </task>
     <task id="LOCAL−00001" summary="Vi svinger oss til høyre og venstre!">
       <created>1692175756962</created>
@@ -97,7 +99,25 @@
       <option name="presentableId" value="LOCAL−00007" />
       <updated>1692859916661</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL−00008" summary="Justering av svingealgoritme; bruker begge hjulene">
+      <created>1693298015374</created>
+      <option name="number" value="LOCAL−00008" />
+      <option name="presentableId" value="LOCAL−00008" />
+      <updated>1693298015374</updated>
+    </task>
+    <task id="LOCAL−00009" summary="Justering av svingealgoritme; bruker begge hjulene">
+      <created>1693298074374</created>
+      <option name="number" value="LOCAL−00009" />
+      <option name="presentableId" value="LOCAL−00009" />
+      <updated>1693298074374</updated>
+    </task>
+    <task id="LOCAL−00010" summary="Justering av svingealgoritme; bruker kun ett hjul">
+      <created>1693307691491</created>
+      <option name="number" value="LOCAL−00010" />
+      <option name="presentableId" value="LOCAL−00010" />
+      <updated>1693307691491</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -122,6 +142,8 @@
     <MESSAGE value="kode som kjører bra på bane" />
     <MESSAGE value="Tilpasser svinger utifra timing og ikke linjetelling." />
     <MESSAGE value="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
-    <option name="LAST_COMMIT_MESSAGE" value="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
+    <MESSAGE value="Justering av svingealgoritme; bruker begge hjulene" />
+    <MESSAGE value="Justering av svingealgoritme; bruker kun ett hjul" />
+    <option name="LAST_COMMIT_MESSAGE" value="Justering av svingealgoritme; bruker kun ett hjul" />
   </component>
 </project>
