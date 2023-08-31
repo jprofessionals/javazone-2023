@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Logo from '$lib/logo.svelte'
 	import { currentPlayer } from '$lib/stores'
 	import { AppBar } from '@skeletonlabs/skeleton'
 	import { fade, fly } from 'svelte/transition'
@@ -10,12 +9,13 @@
 	})
 </script>
 
-<AppBar background="bg-slate-700" padding="pl-2">
+<AppBar background="bg-black starry">
 	<svelte:fragment slot="lead">
-		<Logo />
+		<span class="py-4 text-2xl text-white pixel-font">
+			<span class="text-orange-500">j</span>Pro
+		</span>
 	</svelte:fragment>
 	<div class="flex items-center">
-		<span class="text-2xl mt-3 text-white">JavaZone 2023</span>
 		{#if currentPlayerName}
 			<div in:fly={{ x: 200, duration: 1000 }} out:fade>
 				<span class="text-center w-full text-slate-800 mx-20 p-2 parch rounded-lg">
@@ -26,11 +26,5 @@
 			</div>
 		{/if}
 	</div>
-	<svelte:fragment slot="trail">
-		<img
-			src="https://www.icegif.com/wp-content/uploads/2023/02/icegif-519.gif"
-			class="h-20"
-			alt="Dog"
-		/>
-	</svelte:fragment>
+	<svelte:fragment slot="trail" />
 </AppBar>
