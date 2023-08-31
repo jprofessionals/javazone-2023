@@ -3,6 +3,7 @@ import type { Config } from 'tailwindcss'
 
 import { skeleton } from '@skeletonlabs/tw-plugin'
 import forms from '@tailwindcss/forms'
+import typography from '@tailwindcss/typography'
 
 const config = {
 	darkMode: 'class',
@@ -26,7 +27,7 @@ const config = {
 			},
 		},
 	},
-	plugins: [forms, skeleton({ themes: { preset: ['skeleton', 'wintry'] } })],
+	plugins: [forms, typography, skeleton({ themes: { preset: ['skeleton', 'wintry'] } })],
 } satisfies Config
 
 export default config
