@@ -1,7 +1,5 @@
 <script lang="ts">
 	import cn from '$utils/cn'
-	import BotImg1 from '$lib/images/bot-2.png'
-	import BotImg2 from '$lib/images/bot-3.png'
 
 	//	import { onMount } from 'svelte'
 	import type { Score } from './types'
@@ -31,12 +29,7 @@
 </svelte:head>
 
 <div class={'container max-w-full h-full'}>
-	<div
-		class={cn(
-			'text-4xl flex flex-col gap-12 bg-black starry relative items-center py-10',
-			'w-full h-full',
-		)}
-	>
+	<div class={cn('text-4xl flex flex-col gap-12  relative items-center py-10', 'w-full h-full')}>
 		<h1
 			class={cn(
 				'h1 max-w-lg text-white text-center [text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)] pixel-font',
@@ -44,7 +37,7 @@
 		>
 			Current Leaderboard
 		</h1>
-		<ol class={cn('text-4xl flex flex-col gap-4 bg-black starry relative')}>
+		<ol class={cn('text-5xl flex flex-col gap-4 relative')}>
 			{#each highScoreData as highscore, index}
 				<li
 					class={cn(
@@ -63,11 +56,4 @@
 			{/each}
 		</ol>
 	</div>
-</div>
-
-<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4">
-	<img src={BotImg2} alt="dog" class="w-20 md:w-60" />
-</div>
-<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4">
-	<img src={BotImg1} alt="dog" class="w-20 md:w-60" />
 </div>

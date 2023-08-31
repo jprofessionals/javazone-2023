@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '../app.css'
-	import Img from '$lib/images/neko-idle.gif'
+
+	import BotImg1 from '$lib/images/bot-2.png'
+	import BotImg2 from '$lib/images/bot-3.png'
 
 	import { AppShell } from '@skeletonlabs/skeleton'
 	import Header from './Header.svelte'
@@ -21,15 +23,12 @@
 	<slot />
 
 	<!-- <svelte:fragment slot="pageFooter">Footer</svelte:fragment> -->
-
-	<div class="absolute -left-4 -bottom-4" style="transform: rotateY(180deg)">
-		<img src={Img} alt="dog" width="200" />
-	</div>
-	<div class="absolute right-0 bottom-0" style="transform: rotateY(180deg)">
-		<img
-			src="https://www.icegif.com/wp-content/uploads/2023/02/icegif-519.gif"
-			class="h-32"
-			alt="Dog"
-		/>
-	</div>
 </AppShell>
+
+<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4">
+	<img src={BotImg2} alt="dog" class="w-20 md:w-52" />
+</div>
+
+<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4">
+	<img src={BotImg1} alt="dog" class="w-20 md:w-60" />
+</div>
