@@ -2,7 +2,7 @@ export type Score = {
 	id?: string
 	created_at?: string
 	score: number
-	players: Pick<Player, 'username'>
+	player: Player
 }
 
 export type Player = {
@@ -11,5 +11,4 @@ export type Player = {
 	name?: string
 	username?: string
 	email?: string
-	score?: Score[]
 }
