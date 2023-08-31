@@ -1,27 +1,21 @@
 <script lang="ts">
 	import cn from '$utils/cn'
 
-	//	import { onMount } from 'svelte'
+	import { onMount } from 'svelte'
 	import type { Score } from './types'
-	// import { currentHighScore } from '$lib/stores'
-	const sourceData: Score[] = [
-		{ score: 10, players: { username: 'MARIO' } },
-		{ score: 108, players: { username: 'PEACH' } },
-		{ score: 40, players: { username: 'LUIGI' } },
-		{ score: 69, players: { username: 'DNKNG' } },
-		{ score: 9, players: { username: 'BWSER' } },
-	].sort((a, b) => {
-		if (a.score > b.score) return -1
-		if (a.score < b.score) return 1
-		return 0
+
+	let scores: Score[] = []
+
+	onMount(async () => {
+		const response = await fetch('/api/score?top=10')
+		const { data, error } = await response.json()
+		if (error) console.error(error)
+		else {
+			setTimeout(() => {
+				scores = data
+			}, 300)
+		}
 	})
-
-	let highScoreData: Score[] = sourceData
-
-	// currentHighScore.subscribe((hs) => {
-	// 	highScoreData = hs
-	// })
-	//
 </script>
 
 <svelte:head>
@@ -38,22 +32,26 @@
 			Current Leaderboard
 		</h1>
 		<ol class={cn('md:text-5xl text-3xl flex flex-col gap-4 relative')}>
-			{#each highScoreData as highscore, index}
-				<li
-					class={cn(
-						'text-white',
-						index === 0 && 'text-[#FFD700]',
-						index === 1 && 'text-[#d0d0d0]',
-						index === 2 && 'text-[#cd7f32]',
-						'[text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)]',
-						'flex gap-10 justify-between pixel-font',
-					)}
-				>
-					<span>{highscore.players.username}</span>
-					<!-- Pad the score with 0's -->
-					<span>{String(highscore.score).padStart(3, '0')}</span>
-				</li>
-			{/each}
+			{#if scores.length === 0}
+				<p class="pixel-font text-white animate-pulse">Loading...</p>
+			{:else}
+				{#each scores as highscore, index}
+					<li
+						class={cn(
+							'text-white',
+							index === 0 && 'text-[#FFD700]',
+							index === 1 && 'text-[#d0d0d0]',
+							index === 2 && 'text-[#cd7f32]',
+							'[text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)]',
+							'flex gap-10 justify-between pixel-font',
+						)}
+					>
+						<span title={highscore.player.email}>{highscore.player.username}</span>
+						<!-- Pad the score with 0's -->
+						<span>{String(highscore.score).padStart(3, '0')}</span>
+					</li>
+				{/each}
+			{/if}
 		</ol>
 	</div>
 </div>
