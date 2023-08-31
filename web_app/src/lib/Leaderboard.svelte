@@ -1,14 +1,9 @@
 <script lang="ts">
 	import cn from '$utils/cn'
 
-	import { onMount } from 'svelte'
 	import type { Score } from './types'
 
-	let scores: Score[] = []
-
-	onMount(async () => {
-		await refreshScores()
-	})
+	export let scores: Score[] = []
 
 	const refreshScores = async () => {
 		scores = []
