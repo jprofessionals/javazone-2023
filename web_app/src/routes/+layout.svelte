@@ -25,7 +25,7 @@
 	<!-- <svelte:fragment slot="pageFooter">Footer</svelte:fragment> -->
 </AppShell>
 
-<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4 z-20">
+<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4 z-50">
 	<img src={BotImg2} alt="dog" class="w-20 md:w-52" />
 </div>
 
@@ -36,6 +36,6 @@
 	Ser du etter en ny jobb?
 </a>
 
-<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4 z-20">
+<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4 z-50">
 	<img src={BotImg1} alt="dog" class="w-20 md:w-60" />
 </div>
