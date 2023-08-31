@@ -1,5 +1,8 @@
 <script lang="ts">
 	import cn from '$utils/cn'
+	import BotImg1 from '$lib/images/bot-2.png'
+	import BotImg2 from '$lib/images/bot-3.png'
+
 	//	import { onMount } from 'svelte'
 	import type { Score } from './types'
 	// import { currentHighScore } from '$lib/stores'
@@ -60,4 +63,11 @@
 			{/each}
 		</ol>
 	</div>
+</div>
+
+<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4">
+	<img src={BotImg2} alt="dog" class="w-20 md:w-60" />
+</div>
+<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4">
+	<img src={BotImg1} alt="dog" class="w-20 md:w-60" />
 </div>
