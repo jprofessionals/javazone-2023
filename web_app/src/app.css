@@ -28,8 +28,10 @@ body {
 
 .starry {
 	background-image: url('https://i.pinimg.com/originals/6a/29/28/6a2928106b907101787cd87f6613bdec.gif');
+	background-color: black;
 }
 
 .parch {
 	background-image: url('https://i.stack.imgur.com/kb0Zm.jpg');
+	background-size: cover;
 }

@@ -4,8 +4,8 @@
 
 <!-- <img src={Img} alt="dog" width="200" /> -->
 
-<div class="starry w-full flex justify-center py-10 pb-20 text-black">
-	<section class="prose parch p-4 rounded-lg">
+<div class="w-full flex justify-center py-10 pb-20 text-black">
+	<section class="prose parch p-4 rounded-lg mx-2">
 		<h1>Game Rules</h1>
 		<p>Welcome to our Microbit and Bitbot game! Here are the rules to get you started:</p>
 
