@@ -25,10 +25,17 @@
 	<!-- <svelte:fragment slot="pageFooter">Footer</svelte:fragment> -->
 </AppShell>
 
-<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4">
+<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4 z-20">
 	<img src={BotImg2} alt="dog" class="w-20 md:w-52" />
 </div>
 
-<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4">
+<a
+	class="absolute left-0 right-0 bottom-0 flex justify-center text-white pixel-font z-0"
+	href="https://jpro.no/stillinger"
+>
+	Ser du etter en ny jobb?
+</a>
+
+<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4 z-20">
 	<img src={BotImg1} alt="dog" class="w-20 md:w-60" />
 </div>

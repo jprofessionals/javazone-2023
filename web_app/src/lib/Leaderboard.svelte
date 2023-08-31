@@ -7,6 +7,11 @@
 	let scores: Score[] = []
 
 	onMount(async () => {
+		await refreshScores()
+	})
+
+	const refreshScores = async () => {
+		scores = []
 		const response = await fetch('/api/score?top=10')
 		const { data, error } = await response.json()
 		if (error) console.error(error)
@@ -15,22 +20,21 @@
 				scores = data
 			}, 300)
 		}
-	})
+	}
 </script>
 
 <svelte:head>
 	<title>JProZone 2023</title>
 </svelte:head>
 
-<div class={'container max-w-full h-full'}>
-	<div class={cn('text-4xl flex flex-col gap-12 relative items-center py-10', 'w-full h-full')}>
-		<h1
-			class={cn(
-				'h1 max-w-lg text-white text-center [text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)] pixel-font',
-			)}
+<div class="container max-w-full h-full z-10 relative">
+	<div class="text-4xl flex flex-col gap-12 relative items-center py-10 w-full h-full">
+		<button
+			class="h1 max-w-lg text-white text-center [text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)] pixel-font"
+			on:click={refreshScores}
 		>
 			Current Leaderboard
-		</h1>
+		</button>
 		<ol class={cn('md:text-5xl text-3xl flex flex-col gap-4 relative')}>
 			{#if scores.length === 0}
 				<p class="pixel-font text-white animate-pulse">Loading...</p>

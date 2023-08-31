@@ -6,9 +6,11 @@
 
 <AppBar background="bg-transparent">
 	<svelte:fragment slot="lead">
-		<span class="py-4 text-2xl text-white pixel-font">
-			<span class="text-orange-500">j</span>Pro
-		</span>
+		<a href="/">
+			<span class="py-4 text-2xl text-white pixel-font">
+				<span class="text-orange-500">j</span>Pro
+			</span>
+		</a>
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
 		<nav class="text-white color-white pixel-font text-xs">
