@@ -482,6 +482,7 @@ display.on()
 pn532 = PN532(i2c)
 drive = Drive(globals)
 
+
 while True:
     initializeNextRun(globals, drive)
 
@@ -501,13 +502,13 @@ while True:
 
             if (
                 globals.robots[globals.CURRENT_ROBOT].useCollisionDetection
-                and pin1.read_digital() == 0
+                and pin1.read_analog() < 100
             ):
                 break
 
             pn532.handleRFID(globals)
 
-            if not drive.handleDrive(globals):
+            if not drive.handleDrive():
                 break
             if globals.mostRecentTagTime != 0 and runningTime <= (
                     globals.mostRecentTagTime + globals.tagDisplayTime
