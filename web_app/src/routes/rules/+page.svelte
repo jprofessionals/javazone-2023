@@ -2,8 +2,6 @@
 	import Img from '$lib/images/game-board-1.png'
 </script>
 
-<!-- <img src={Img} alt="dog" width="200" /> -->
-
 <div class="w-full flex justify-center py-10 pb-20 text-black">
 	<section class="prose parch p-4 rounded-lg mx-2 z-10">
 		<h1 class="pixel-font">Game Rules</h1>
