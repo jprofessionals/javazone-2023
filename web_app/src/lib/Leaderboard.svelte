@@ -29,7 +29,7 @@
 </svelte:head>
 
 <div class={'container max-w-full h-full'}>
-	<div class={cn('text-4xl flex flex-col gap-12  relative items-center py-10', 'w-full h-full')}>
+	<div class={cn('text-4xl flex flex-col gap-12 relative items-center py-10', 'w-full h-full')}>
 		<h1
 			class={cn(
 				'h1 max-w-lg text-white text-center [text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)] pixel-font',
@@ -37,7 +37,7 @@
 		>
 			Current Leaderboard
 		</h1>
-		<ol class={cn('text-5xl flex flex-col gap-4 relative')}>
+		<ol class={cn('md:text-5xl text-3xl flex flex-col gap-4 relative')}>
 			{#each highScoreData as highscore, index}
 				<li
 					class={cn(
