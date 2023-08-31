@@ -1,34 +1,35 @@
 @font-face {
-  font-family: "Press Start";
-  src: url("/fonts/prstartk.ttf");
+	font-family: 'Press Start';
+	src: url('/fonts/prstartk.ttf');
 }
 
 /* Write your global styles here, in PostCSS syntax */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind variants;
 
 html,
 body {
-  @apply h-full overflow-hidden;
+	@apply h-full overflow-hidden;
 }
 
 body {
-  @apply bg-surface-50-900-token;
+	@apply bg-surface-50-900-token;
 }
 
 .noise {
-  background-image: url("data:image/svg+xml,<svg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,<svg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 .pixel-font {
-  font-family: "Press Start", sans-serif;
+	font-family: 'Press Start', sans-serif;
 }
 
 .starry {
-  background-image: url("https://i.pinimg.com/originals/6a/29/28/6a2928106b907101787cd87f6613bdec.gif");
+	background-image: url('https://i.pinimg.com/originals/6a/29/28/6a2928106b907101787cd87f6613bdec.gif');
 }
 
 .parch {
-  background-image: url("https://i.stack.imgur.com/kb0Zm.jpg");
+	background-image: url('https://i.stack.imgur.com/kb0Zm.jpg');
 }
