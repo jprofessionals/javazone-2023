@@ -1,8 +1,24 @@
 <script lang="ts">
-	import Img from '$lib/images/game-board-1.png'
+	import GameImg1 from '$lib/images/gameboard-1.png'
+	import GameImg2 from '$lib/images/gameboard-2.png'
+	import ForwardImg from '$lib/images/forward.png'
+	import Forward2Img from '$lib/images/2forward.png'
+	import LeftImg from '$lib/images/left.png'
+	import RightImg from '$lib/images/right.png'
+	import UturnImg from '$lib/images/uturn.png'
+
+	let isSecondDay = false
+
+	let today = new Date()
+	try {
+		const todayDate = today.toISOString().split('T')[0]
+		isSecondDay = todayDate === '2023-09-07'
+	} catch (e) {
+		console.log(e)
+	}
 </script>
 
-<div class="w-full flex justify-center py-10 pb-20 text-black">
+<div class="w-full flex justify-center py-10 pb-40 text-black">
 	<section class="prose parch p-4 rounded-lg mx-2 z-10">
 		<h1 class="pixel-font">Game Rules</h1>
 		<p>Welcome to our Microbit and Bitbot game! Here are the rules to get you started:</p>
@@ -19,53 +35,28 @@
 			<li>You will get three rounds to play.</li>
 			<li>
 				When you are ready, draw 7 random cards. Each card represents a direction:
-				<div class="flex gap-2 flex-wrap">
+				<div class="grid md:grid-cols-2 items-center">
 					<div class="flex items-center gap-2">
-						<img
-							alt=""
-							class="w-20 rotate-90"
-							src="https://render.fineartamerica.com/images/rendered/medium/greeting-card/images/artworkimages/medium/2/illustration-of-hand-pointing-left-csa-images.jpg"
-						/>
-						Forward
+						<img alt="" class="w-28 rounded-lg border-4 border-blue-500" src={ForwardImg} />
+						Forward until next intersection
 					</div>
 					<div class="flex items-center gap-2">
-						<img
-							alt=""
-							class="w-20"
-							src="https://render.fineartamerica.com/images/rendered/medium/greeting-card/images/artworkimages/medium/2/illustration-of-hand-pointing-left-csa-images.jpg"
-						/>
-						Left
+						<img alt="" class="w-28 rounded-lg border-4 border-blue-500" src={LeftImg} />
+						Turn left and drive to next intersection
 					</div>
 					<div class="flex items-center gap-2">
-						<img
-							alt=""
-							class="w-20 rotate-180"
-							src="https://render.fineartamerica.com/images/rendered/medium/greeting-card/images/artworkimages/medium/2/illustration-of-hand-pointing-left-csa-images.jpg"
-						/>
-						Left
+						<img alt="" class="w-28 rounded-lg border-4 border-blue-500" src={RightImg} />
+						Turn right and drive to next intersection
 					</div>
 					<div class="flex items-center gap-2">
-						<img
-							alt=""
-							class="w-20 -rotate-90"
-							src="https://render.fineartamerica.com/images/rendered/medium/greeting-card/images/artworkimages/medium/2/illustration-of-hand-pointing-left-csa-images.jpg"
-						/>
-						U-turn
+						<img alt="" class="w-28 border-4 border-purple-500 rounded-lg" src={UturnImg} />
+						<span>Take a u-turn and drive to next intersection <b>[rare]</b> </span>
 					</div>
 					<div class="flex items-center gap-2">
-						<div>
-							<img
-								alt=""
-								class="w-20 rotate-90"
-								src="https://render.fineartamerica.com/images/rendered/medium/greeting-card/images/artworkimages/medium/2/illustration-of-hand-pointing-left-csa-images.jpg"
-							/>
-							<img
-								alt=""
-								class="w-20 rotate-90 -mt-10"
-								src="https://render.fineartamerica.com/images/rendered/medium/greeting-card/images/artworkimages/medium/2/illustration-of-hand-pointing-left-csa-images.jpg"
-							/>
-						</div>
-						Double-forward [rare]
+						<img alt="" class="w-28 rounded-lg border-4 border-orange-500" src={Forward2Img} />
+						<span>
+							Same as forward, but twice <b>[legendary]</b>
+						</span>
 					</div>
 				</div>
 			</li>
@@ -90,7 +81,11 @@
 				or crosses at each place a line crosses. These are the places where points are stored, and
 				the car can drive to and fro.
 			</p>
-			<img src={Img} alt="dog" class="w-full" />
+			<img
+				src={isSecondDay ? GameImg2 : GameImg1}
+				alt="Overview of the game board with the layout and how many points are where"
+				class="w-full"
+			/>
 		</div>
 
 		<h2 class="pixel-font">Winning</h2>
