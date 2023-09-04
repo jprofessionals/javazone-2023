@@ -8,7 +8,6 @@ from microbit import *
 class Globals:
     def __init__(self):
         self.CURRENT_ROBOT = 0
-        self.playerId = 0
 
         self.robots = [Robot(1.0, 1.0, True),
                        Robot(1.0, 1.0, True),
@@ -444,10 +443,7 @@ def prepareForCommandsDownload(pn532, drive, globals):
     pn532.handleRFID(globals)
     placed = globals.isOnTag
     if not placed:
-        if globals.playerId == 0:
-            setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
-        else:
-            setLEDs(globals.fireleds, 1.0, 0, 1.0, 0.5)
+        setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
 
     return placed
 
@@ -469,14 +465,7 @@ def endRun(globals, drive):
 
 globals = Globals()
 
-if button_a.is_pressed():
-    globals.playerId = 1
-
-if globals.playerId == 0:
-    radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
-else:
-    radio.config(length=globals.MAX_MSG_LENGTH, channel=22, power=7, address=0x276E5F98)
-
+radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
 radio.on()
 display.on()
 pn532 = PN532(i2c)
