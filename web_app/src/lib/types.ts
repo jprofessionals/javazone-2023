@@ -12,3 +12,11 @@ export type Player = {
 	username?: string
 	email?: string
 }
+
+export type Player_Score = {
+	id?: number
+	created_at?: string
+	player_username: string
+	score: number
+	player_email?: string
+}

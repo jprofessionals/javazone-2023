@@ -1,13 +1,13 @@
 <script lang="ts">
 	import cn from '$utils/cn'
 
-	import type { Score } from './types'
+	import type { Player_Score } from './types'
 
-	export let scores: Score[] = []
+	export let scores: Player_Score[] = []
 
 	const refreshScores = async () => {
 		scores = []
-		const response = await fetch('/api/score?top=10')
+		const response = await fetch('/api/v2/player_score?top=10')
 		const { data, error } = await response.json()
 		if (error) console.error(error)
 		else {
@@ -45,9 +45,9 @@
 							'flex gap-10 justify-between pixel-font',
 						)}
 					>
-						<span title={highscore.player.email}>{highscore.player.username}</span>
+						<span title={highscore.player_email}>{highscore.player_username}</span>
 						<!-- Pad the score with 0's -->
-						<span>{String(highscore.score).padStart(3, '0')}</span>
+						<span>{String(highscore.score).padStart(2, '0')}</span>
 					</li>
 				{/each}
 			{/if}
