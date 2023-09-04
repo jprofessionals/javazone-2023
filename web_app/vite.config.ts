@@ -5,6 +5,8 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}'],
+		// Ignore old v1 tests
+		exclude: ['src/**/v1/**'],
 		server: {
 			deps: {
 				inline: [/vite-test-utils/],
