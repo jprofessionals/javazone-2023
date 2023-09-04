@@ -11,7 +11,7 @@ class Globals:
 
         self.robots = [Robot(1.0, 1.0, True),
                        Robot(1.0, 1.0, True),
-                       Robot(1.0, 1.0, True),
+                       Robot(1.2, 1.0, False),
                        Robot(1.0, 1.0, True)]
 
         self.cards = {
@@ -184,9 +184,9 @@ class PN532:
                 return None
 
             if (
-                self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                and currentRFIDTime
-                > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
+                    and currentRFIDTime
+                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
             ):
                 self.state = RFIDCom.READY
 
@@ -338,8 +338,8 @@ class Drive:
     def keepTurning(self, direction):
         status = self.getLinesensorStatus()
         if (
-            (status & direction)
-            and (running_time() - self.startedTurning) > self.EXPECTED_TURN_TIME
+                (status & direction)
+                and (running_time() - self.startedTurning) > self.EXPECTED_TURN_TIME
         ):
             self.adjustMotors(self.TORQUE, self.TORQUE)
             self.state = DriveState.FORWARD
@@ -372,8 +372,8 @@ class Drive:
         elif self.state == DriveState.TURNING_AROUND:
             status = self.getLinesensorStatus()
             if (
-                status & self.LEFT_LF
-                and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME
+                    status & self.LEFT_LF
+                    and running_time() - self.startedTurning > self.EXPECTED_U_TURN_TIME
             ):
                 self.adjustMotors(self.TORQUE, self.TORQUE)
                 self.state = DriveState.FORWARD
@@ -392,6 +392,7 @@ class Drive:
     def handleDrive(self):
         if self.state is DriveState.READY:
             if not len(self.globals.commands):
+                radio.send("No more commands")
                 return False
             command = self.globals.commands[0]
             self.globals.commands = self.globals.commands[1:]
@@ -487,12 +488,12 @@ while True:
         while True:
             runningTime = running_time()
             if runningTime >= (globals.mostRecentTagTime + globals.game_timeout):
+                # TODO: only send if car is not on a tag
+                radio.send("TIMEOUT")
                 break
 
-            if (
-                globals.robots[globals.CURRENT_ROBOT].useCollisionDetection
-                and pin1.read_analog() < 100
-            ):
+            if globals.robots[globals.CURRENT_ROBOT].useCollisionDetection and pin1.read_digital() == 0:
+                radio.send("CRASH")
                 break
 
             pn532.handleRFID(globals)
@@ -521,6 +522,15 @@ while True:
                     / globals.tagDisplayTime,
                     2 + abs(tagPoints)
                 )
-    except (Exception):
+    except Exception as e:
+        exc= str(e)
+
+        exception_text = "Exception: " + str(e) + "\n"
+
+        chunk_size = globals.MAX_MSG_LENGTH
+        for i in range(0, len(exception_text), chunk_size):
+            chunk = exception_text[i:i+chunk_size]
+            radio.send(chunk)
+
         display.show(Image.SKULL)
     endRun(globals, drive)
