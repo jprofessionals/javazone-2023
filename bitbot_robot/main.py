@@ -9,10 +9,10 @@ class Globals:
     def __init__(self):
         self.CURRENT_ROBOT = 0
 
-        self.robots = [Robot(1.0, 1.0, True),
-                       Robot(1.0, 1.0, True),
-                       Robot(1.2, 1.0, False),
-                       Robot(1.0, 1.0, True)]
+        self.robots = [Robot(0.90, 1.0, True),
+                       Robot(0.85, 1.0, True),
+                       Robot(1.0, 0.83, False),
+                       Robot(0.90, 1.0, True)]
 
         self.cards = {
             1944688892: Card(1),
@@ -492,7 +492,10 @@ while True:
                 radio.send("TIMEOUT")
                 break
 
-            if globals.robots[globals.CURRENT_ROBOT].useCollisionDetection and pin1.read_digital() == 0:
+            if (
+                globals.robots[globals.CURRENT_ROBOT].useCollisionDetection
+                and pin1.read_digital() == 0
+            ):
                 radio.send("CRASH")
                 break
 
@@ -523,8 +526,6 @@ while True:
                     2 + abs(tagPoints)
                 )
     except Exception as e:
-        exc= str(e)
-
         exception_text = "Exception: " + str(e) + "\n"
 
         chunk_size = globals.MAX_MSG_LENGTH
