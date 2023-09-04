@@ -6,7 +6,6 @@
 
 	import { AppShell } from '@skeletonlabs/skeleton'
 	import Header from './Header.svelte'
-	import Sidebar from '$lib/Sidebar.svelte'
 
 	import { initializeStores } from '@skeletonlabs/skeleton'
 	initializeStores()
@@ -16,26 +15,18 @@
 	<svelte:fragment slot="header">
 		<Header />
 	</svelte:fragment>
-	<svelte:fragment slot="sidebarLeft">
-		<Sidebar />
-	</svelte:fragment>
-
 	<slot />
-
-	<!-- <svelte:fragment slot="pageFooter">Footer</svelte:fragment> -->
 </AppShell>
 
-<div class="absolute -left-1 md:-left-4 -bottom-1 md:-bottom-4 z-50">
-	<img src={BotImg2} alt="dog" class="w-20 md:w-52" />
-</div>
+<div class="absolute bottom-0 w-full flex justify-between items-end gap-2">
+	<img src={BotImg2} alt="" class="w-20 md:w-52 z-20" />
 
-<a
-	class="absolute left-0 right-0 bottom-0 flex justify-center text-white pixel-font z-0"
-	href="https://jpro.no/stillinger"
->
-	Ser du etter en ny jobb?
-</a>
+	<a
+		class="relative text-white pixel-font bg-black px-4 pt-2 pb-4 text-center z-0 rounded-t-lg"
+		href="https://jpro.no/stillinger"
+	>
+		Looking for a new job?
+	</a>
 
-<div class="absolute -right-1 md:-right-4 -bottom-1 md:-bottom-4 z-50">
-	<img src={BotImg1} alt="dog" class="w-20 md:w-60" />
+	<img src={BotImg1} alt="" class="w-20 md:w-60 z-20" />
 </div>
