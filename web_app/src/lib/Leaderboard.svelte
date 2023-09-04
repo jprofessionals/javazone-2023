@@ -22,7 +22,7 @@
 	<title>JProZone 2023</title>
 </svelte:head>
 
-<div class="container max-w-full h-full relative">
+<div class="container max-w-full h-full relative pb-20">
 	<div class="text-4xl flex flex-col gap-12 relative items-center py-10 w-full h-full">
 		<button
 			class="h1 max-w-lg text-white text-center [text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)] pixel-font"
