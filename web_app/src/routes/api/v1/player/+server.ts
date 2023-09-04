@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit'
 import { z } from 'zod'
 import type { RequestHandler } from './$types'
 import { getSupabaseClient } from '$utils/db_client'
+import { validateCUDRequest } from '$utils/validate'
 
 const supabase = getSupabaseClient('service')
 
@@ -30,6 +31,10 @@ export const GET: RequestHandler = async () => {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
+	const isValid = validateCUDRequest(request.headers.get('secret'))
+	if (!isValid) {
+		return new Response('Unauthorized', { status: 401 })
+	}
 	const newPlayer = await request.json()
 	const playerData = playerSchema.safeParse(newPlayer)
 	// If player data is not valid, return an error
@@ -54,6 +59,10 @@ export const POST: RequestHandler = async ({ request }) => {
 }
 
 export const DELETE: RequestHandler = async ({ request }) => {
+	const isValid = validateCUDRequest(request.headers.get('secret'))
+	if (!isValid) {
+		return new Response('Unauthorized', { status: 401 })
+	}
 	const req = (await request.json()) as { email: string }
 	if (!req.email) {
 		return new Response('Please provide email to delete', { status: 400 })

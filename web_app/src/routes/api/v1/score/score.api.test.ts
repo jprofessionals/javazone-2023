@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest'
 import fetch from 'node-fetch'
-import { LOCAL_BASE_URL, SUPABASE_SERVICE_KEY } from '$env/static/private'
+import { LOCAL_BASE_URL, SECRET_KEY, SUPABASE_SERVICE_KEY } from '$env/static/private'
 
 // Trick so vitest knows to re-run the tests below when +server.ts changes:
 import './+server'
@@ -44,6 +44,7 @@ describe('POST /api/players', () => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				secret: SECRET_KEY,
 			},
 			body: JSON.stringify(faultyScore),
 		})
@@ -64,13 +65,11 @@ describe('POST /api/players', () => {
 			score: 11,
 		}
 
-		console.log('wh')
-
-		console.log('hey')
 		const response = await fetch(`${LOCAL_BASE_URL}/api/score`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				secret: SECRET_KEY,
 			},
 			body: JSON.stringify(score1),
 		})
@@ -81,6 +80,7 @@ describe('POST /api/players', () => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				secret: SECRET_KEY,
 			},
 			body: JSON.stringify(score2),
 		})
@@ -94,6 +94,7 @@ describe('POST /api/players', () => {
 				method: 'DELETE',
 				headers: {
 					'Content-Type': 'application/json',
+					secret: SECRET_KEY,
 				},
 				body: JSON.stringify({ email: 'ingvild@gatsby.no' }),
 			})

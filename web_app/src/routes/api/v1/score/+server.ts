@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit'
 import { z } from 'zod'
 import type { RequestHandler } from './$types'
 import { getSupabaseClient } from '$utils/db_client'
+import { validateCUDRequest } from '$utils/validate'
 
 const supabase = getSupabaseClient('service')
 
@@ -40,9 +41,12 @@ const scoreSchema = z.object({
 })
 
 export const POST: RequestHandler = async ({ request }) => {
+	const isValid = validateCUDRequest(request.headers.get('secret'))
+	if (!isValid) {
+		return new Response('Unauthorized', { status: 401 })
+	}
 	const newScore = await request.json()
 	const scoreData = scoreSchema.safeParse(newScore)
-	console.log('hey sir', newScore)
 	// If score data is not valid, return an error
 	if (!scoreData.success) {
 		const errors = scoreData.error.errors.map((err) => err.message)
@@ -81,6 +85,10 @@ const getPlayerIdByEmail = async (email: string) => {
 }
 
 export const DELETE: RequestHandler = async ({ request }) => {
+	const isValid = validateCUDRequest(request.headers.get('secret'))
+	if (!isValid) {
+		return new Response('Unauthorized', { status: 401 })
+	}
 	const req = (await request.json()) as { email: string }
 	if (!req.email) {
 		return new Response('Please provide email to delete', { status: 400 })
