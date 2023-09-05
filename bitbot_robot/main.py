@@ -393,7 +393,6 @@ class Drive:
     def handleDrive(self):
         if self.state is DriveState.READY:
             if not len(self.globals.commands):
-                radio.send("No more commands")
                 return False
             command = self.globals.commands[0]
             self.globals.commands = self.globals.commands[1:]
