@@ -5,7 +5,7 @@
 
 	export let scores: Player_Score[] = []
 
-	const refreshScores = async () => {
+	export const refreshScores = async () => {
 		scores = []
 		const response = await fetch('/api/v2/player_score?top=10')
 		const { data, error } = await response.json()
