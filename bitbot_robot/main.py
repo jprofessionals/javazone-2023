@@ -7,12 +7,13 @@ from microbit import *
 
 class Globals:
     def __init__(self):
-        self.CURRENT_ROBOT = 0
+        self.CURRENT_ROBOT = 2
+        self.playerId = 0
 
-        self.robots = [Robot(0.90, 1.0, True),
-                       Robot(0.85, 1.0, True),
-                       Robot(1.0, 0.83, False),
-                       Robot(0.90, 1.0, True)]
+        self.robots = [Robot(1.0, 1.0, True),
+                       Robot(1.0, 1.0, True),
+                       Robot(1.2, 1.0, False),
+                       Robot(1.0, 1.0, True)]
 
         self.cards = {
             1944688892: Card(1),
@@ -50,7 +51,8 @@ class Globals:
         self.tags = set()
         self.mostRecentTag = 0
         self.isOnTag = False
-        self.mostRecentTagTime = 0
+        self.mostRecentScoreEarnedTime = 0
+        self.mostRecentTagCrossedTime = 0
 
         self.fireleds = neopixel.NeoPixel(pin13, 12)
 
@@ -231,6 +233,7 @@ class PN532:
 
                         if response != globals.mostRecentTag:
                             # send the tag to the server
+                            globals.mostRecentTagCrossedTime = currentRFIDTime
                             radio.send(str(response))
                             drive.stop()  # stop the robot and load the next command
 
@@ -240,7 +243,7 @@ class PN532:
                             globals.tags.add(response)
 
                             if globals.runIsStarted:
-                                globals.mostRecentTagTime = currentRFIDTime
+                                globals.mostRecentScoreEarnedTime = currentRFIDTime
                                 print("new card found: ", response)
                                 if response in globals.cards:
                                     globals.points = (
@@ -433,7 +436,8 @@ def initializeNextRun(globals, drive):
     drive.stop()
     globals.mostRecentTag = 0
     globals.isOnTag = False
-    globals.mostRecentTagTime = 0
+    globals.mostRecentScoreEarnedTime = 0
+    globals.mostRecentTagCrossedTime = 0
     globals.commands = ""
     while radio.receive_bytes() is not None:
         pass
@@ -444,7 +448,10 @@ def prepareForCommandsDownload(pn532, drive, globals):
     pn532.handleRFID(globals)
     placed = globals.isOnTag
     if not placed:
-        setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
+        if globals.playerId == 0:
+            setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
+        else:
+            setLEDs(globals.fireleds, 1.0, 0, 1.0, 0.5)
 
     return placed
 
@@ -466,7 +473,14 @@ def endRun(globals, drive):
 
 globals = Globals()
 
-radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
+if button_a.is_pressed():
+    globals.playerId = 1
+
+if globals.playerId == 0:
+    radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
+else:
+    radio.config(length=globals.MAX_MSG_LENGTH, channel=22, power=7, address=0x276E5F98)
+
 radio.on()
 display.on()
 pn532 = PN532(i2c)
@@ -483,19 +497,16 @@ while True:
 
     setLEDs(globals.fireleds, 0, 0, 0, 0)
     globals.runIsStarted = True
-    globals.mostRecentTagTime = running_time()
+    globals.mostRecentTagCrossedTime = running_time()
     try:
         while True:
             runningTime = running_time()
-            if runningTime >= (globals.mostRecentTagTime + globals.game_timeout):
+            if runningTime >= (globals.mostRecentTagCrossedTime + globals.game_timeout):
                 # TODO: only send if car is not on a tag
                 radio.send("TIMEOUT")
                 break
 
-            if (
-                globals.robots[globals.CURRENT_ROBOT].useCollisionDetection
-                and pin1.read_digital() == 0
-            ):
+            if globals.robots[globals.CURRENT_ROBOT].useCollisionDetection and pin1.read_digital() == 0:
                 radio.send("CRASH")
                 break
 
@@ -503,8 +514,8 @@ while True:
 
             if not drive.handleDrive():
                 break
-            if globals.mostRecentTagTime != 0 and runningTime <= (
-                    globals.mostRecentTagTime + globals.tagDisplayTime
+            if globals.mostRecentScoreEarnedTime != 0 and runningTime <= (
+                    globals.mostRecentScoreEarnedTime + globals.tagDisplayTime
             ):
                 tagPoints = 0
                 if globals.mostRecentTag in globals.cards:
@@ -521,11 +532,13 @@ while True:
                     r,
                     g,
                     0,
-                    ((globals.mostRecentTagTime + globals.tagDisplayTime) - runningTime)
+                    ((globals.mostRecentScoreEarnedTime + globals.tagDisplayTime) - runningTime)
                     / globals.tagDisplayTime,
                     2 + abs(tagPoints)
                 )
     except Exception as e:
+        exc= str(e)
+
         exception_text = "Exception: " + str(e) + "\n"
 
         chunk_size = globals.MAX_MSG_LENGTH
