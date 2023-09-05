@@ -454,7 +454,14 @@ def commandsDownload(globals):
     globals.commands = radio.receive_bytes()
 
     if globals.commands is None or len(globals.commands) == 0:
-        setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
+        if (
+            globals.mostRecentTag in globals.cards
+            and globals.cards.get(globals.mostRecentTag).isStartCard
+        ):
+            setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
+        else:
+            setLEDs(globals.fireleds, 1.0, 0, 1.0, 0.5)
+
         return False
 
     if globals.commands[0] == 'S':
