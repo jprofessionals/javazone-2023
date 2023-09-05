@@ -480,13 +480,13 @@ def endRun(globals, drive):
     radio.send(str("RUN_END"))
 
 
+display.on()
 globals = Globals()
+pn532 = PN532(i2c)
+drive = Drive(globals)
 
 radio.config(length=globals.MAX_MSG_LENGTH, channel=14, power=7, address=0x6795221E)
 radio.on()
-display.on()
-pn532 = PN532(i2c)
-drive = Drive(globals)
 
 
 while True:
