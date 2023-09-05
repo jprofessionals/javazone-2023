@@ -39,7 +39,7 @@ const playerScoreSchema = z.object({
 		})
 		.trim()
 		.toUpperCase()
-		.min(1, 'username must be at least 1 character')
+		.min(3, 'username must be at least 3 character')
 		.max(5, 'username must be at most 5 characters'),
 	player_email: z.string().trim().email('Must be a proper email').optional(),
 })
