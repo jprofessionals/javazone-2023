@@ -18,7 +18,7 @@ class Globals:
             1944688892: Card(1),
             2214546422: Card(2),
             3287137276: Card(3),
-            871609077: Card(0),
+            871609077: Card(0, True),
             4081897461: Card(1),
             3004060668: Card(2),
             1944446709: Card(1),
@@ -60,8 +60,9 @@ class Globals:
 
 
 class Card:
-    def __init__(self, points):
+    def __init__(self, points, isStartCard=False):
         self.points = points
+        self.isStartCard = isStartCard
 
 class Robot:
     def __init__(self, leftCalibrate, rightCalibrate, useCollisionDetection):
@@ -451,9 +452,17 @@ def prepareForCommandsDownload(pn532, drive, globals):
 
 def commandsDownload(globals):
     globals.commands = radio.receive_bytes()
+
     if globals.commands is None or len(globals.commands) == 0:
         setLEDs(globals.fireleds, 0, 0, 1.0, 0.5)
         return False
+
+    if globals.commands[0] == 'S':
+        if globals.mostRecentTag not in globals.cards:
+            return False
+
+        if not globals.cards.get(globals.mostRecentTag).isStartCard:
+            return False
 
     globals.commands = str(globals.commands, "utf8")
     return True
