@@ -14,12 +14,10 @@
 
 	function startPresentation() {
 		playing = true
-		video.webkitRequestFullScreen()
 		video.play()
 	}
 
 	function stopPresentation() {
-		video.webkitExitFullScreen()
 		playing = false
 	}
 
@@ -28,7 +26,7 @@
 			stopPresentation()
 			setTimeout(() => {
 				startPresentation()
-			}, 45000)
+			}, 10000)
 		})
 	}
 </script>
@@ -40,11 +38,10 @@
 <video
 	src={Video}
 	on:ended={onEnd}
-	width="100%"
-	height="100%"
 	controls
 	bind:this={video}
-	class={cn(!playing && 'invisible', 'absolute')}
+	on:click={stopPresentation}
+	class={cn(!playing && 'invisible', 'absolute z-50 block top-0 w-dscreen h-dscreen bg-black')}
 >
 	<track kind="captions" />
 </video>
