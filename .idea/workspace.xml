@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="Justering av svingealgoritme; bruker kun ett hjul">
+    <list default="true" id="f4589ec2-6ca4-4bf4-a510-5a2a5ec19b07" name="Changes" comment="nye poengverdier">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -117,7 +117,25 @@
       <option name="presentableId" value="LOCAL−00010" />
       <updated>1693307691491</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL−00011" summary="tar bort &quot;no more commands&quot;">
+      <created>1693913397063</created>
+      <option name="number" value="LOCAL−00011" />
+      <option name="presentableId" value="LOCAL−00011" />
+      <updated>1693913397063</updated>
+    </task>
+    <task id="LOCAL−00012" summary="tar bort &quot;no more commands&quot;">
+      <created>1693918935424</created>
+      <option name="number" value="LOCAL−00012" />
+      <option name="presentableId" value="LOCAL−00012" />
+      <updated>1693918935424</updated>
+    </task>
+    <task id="LOCAL−00013" summary="nye poengverdier">
+      <created>1693918952684</created>
+      <option name="number" value="LOCAL−00013" />
+      <option name="presentableId" value="LOCAL−00013" />
+      <updated>1693918952684</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -144,6 +162,8 @@
     <MESSAGE value="krever ikke perfekt linjeplassering for å laste ned kommandoer, bare at bitbot står på et kort." />
     <MESSAGE value="Justering av svingealgoritme; bruker begge hjulene" />
     <MESSAGE value="Justering av svingealgoritme; bruker kun ett hjul" />
-    <option name="LAST_COMMIT_MESSAGE" value="Justering av svingealgoritme; bruker kun ett hjul" />
+    <MESSAGE value="tar bort &quot;no more commands&quot;" />
+    <MESSAGE value="nye poengverdier" />
+    <option name="LAST_COMMIT_MESSAGE" value="nye poengverdier" />
   </component>
 </project>
