@@ -7,7 +7,7 @@ from microbit import *
 
 class Globals:
     def __init__(self):
-        self.CURRENT_ROBOT = 2
+        self.CURRENT_ROBOT = 0
 
         self.robots = [Robot(0.90, 1.0, True),
                        Robot(0.85, 1.0, True),
@@ -40,7 +40,7 @@ class Globals:
             3278031868: Card(6),
         }
 
-        #Day 2 cards
+        # Day 2 cards
         # self.cards = {
         #     1944688892: Card(2),
         #     2214546422: Card(0, True),
@@ -128,6 +128,7 @@ class PN532:
 
     I2C_DELAY = 10
     I2C_CARD_POLL_TIMEOUT = 10000
+    I2C_CARD_TAG_TIMEOUT = 100
 
     def __init__(self, i2c):
         self._i2c = i2c
@@ -194,6 +195,7 @@ class PN532:
 
     def getCardId(self, command, responseLen):
         response = self.readFrame(responseLen + 2)
+
         if not (response[0] == self.PN532TOHOST and response[1] == (command + 1)):
             raise RuntimeError("Invalid card response")
         # Check only 1 card with up to a 7 byte UID is present.
@@ -210,12 +212,18 @@ class PN532:
             if currentRFIDTime < (self.previousCommandTime + self.I2C_DELAY):
                 return None
 
-            if (
-                    self.previousCommand == self.COMMAND_INLISTPASSIVETARGET
-                    and currentRFIDTime
-                    > (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
-            ):
-                self.state = RFIDCom.READY
+            if self.previousCommand == self.COMMAND_INLISTPASSIVETARGET:
+                if (
+                    currentRFIDTime >
+                    (self.previousCommandTime + self.I2C_CARD_TAG_TIMEOUT)
+                ):
+                    globals.isOnTag = False
+
+                if (
+                    currentRFIDTime >
+                    (self.previousCommandTime + self.I2C_CARD_POLL_TIMEOUT)
+                ):
+                    self.state = RFIDCom.READY
 
             if self.state != RFIDCom.READY and not self.isReady():
                 if currentRFIDTime > (self.previousCommandTime + 1000):
@@ -251,9 +259,7 @@ class PN532:
                         self.COMMAND_INLISTPASSIVETARGET, responseLen=19
                     )
 
-                    if response is None:
-                        globals.isOnTag = False
-                    else:
+                    if response != 0:
                         globals.isOnTag = True
 
                         if response != globals.mostRecentTag:
@@ -470,17 +476,20 @@ def initializeNextRun(globals, drive):
 
 def prepareForCommandsDownload(pn532, drive, globals):
     pn532.handleRFID(globals)
-    placed = globals.isOnTag
-    if not placed:
+    if not globals.isOnTag:
         setLEDs(globals.fireleds, 1.0, 1.0, 0, 0.5)
 
-    return placed
+    return globals.isOnTag
 
 
 def commandsDownload(globals):
     globals.commands = radio.receive_bytes()
 
-    if globals.commands is None or len(globals.commands) == 0:
+    if (
+        not globals.isOnTag
+        or globals.commands is None
+        or len(globals.commands) == 0
+    ):
         if (
                 globals.mostRecentTag in globals.cards
                 and globals.cards.get(globals.mostRecentTag).isStartCard
@@ -491,14 +500,17 @@ def commandsDownload(globals):
 
         return False
 
+    globals.commands = str(globals.commands, "utf8")
+
     if globals.commands[0] == 'S':
         if globals.mostRecentTag not in globals.cards:
+            globals.commands = ""
             return False
 
         if not globals.cards.get(globals.mostRecentTag).isStartCard:
+            globals.commands = ""
             return False
 
-    globals.commands = str(globals.commands, "utf8")
     return True
 
 
@@ -519,8 +531,9 @@ radio.on()
 while True:
     initializeNextRun(globals, drive)
 
-    while not prepareForCommandsDownload(pn532, drive, globals) or not commandsDownload(
-            globals
+    while (
+        not prepareForCommandsDownload(pn532, drive, globals)
+        or not commandsDownload(globals)
     ):
         pass
 
