@@ -1,20 +1,44 @@
 <script lang="ts">
 	import cn from '$utils/cn'
+	import { onDestroy, onMount } from 'svelte'
 
 	import type { Player_Score } from './types'
+	import { scale } from 'svelte/transition'
 
 	export let scores: Player_Score[] = []
 
-	export const refreshScores = async () => {
-		scores = []
+	let loading = false
+
+	const refreshScores = async () => {
 		const response = await fetch('/api/v2/player_score?top=10')
 		const { data, error } = await response.json()
 		if (error) console.error(error)
 		else {
-			setTimeout(() => {
-				scores = data
-			}, 300)
+			await new Promise((resolve) =>
+				setTimeout(() => {
+					scores = data
+					resolve(0)
+				}, 600),
+			)
 		}
+	}
+
+	let intervalId: ReturnType<typeof setInterval>
+
+	onMount(async () => {
+		intervalId = setInterval(async () => {
+			await refreshScores()
+		}, 7000) // refresh every 5 seconds
+	})
+
+	onDestroy(() => {
+		clearInterval(intervalId)
+	})
+
+	const onRefresh = async () => {
+		loading = true
+		await refreshScores()
+		loading = false
 	}
 </script>
 
@@ -26,16 +50,17 @@
 	<div class="text-4xl flex flex-col gap-12 relative items-center py-10 w-full h-full">
 		<button
 			class="h1 max-w-lg text-white text-center [text-shadow:_4px_4px_0_rgb(100_100_100_/_60%)] pixel-font"
-			on:click={refreshScores}
+			on:click={onRefresh}
 		>
 			Current Leaderboard
 		</button>
 		<ol class={cn('md:text-5xl text-3xl flex flex-col gap-4 relative')}>
-			{#if scores.length === 0}
+			{#if loading}
 				<p class="pixel-font text-white animate-pulse">Loading...</p>
 			{:else}
-				{#each scores as highscore, index}
+				{#each scores as highscore, index (highscore.id)}
 					<li
+						in:scale
 						class={cn(
 							'text-white',
 							index === 0 && 'text-[#FFD700]',
