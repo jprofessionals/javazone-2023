@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		if (Number(top) > 0) {
 			const result = await supabase
 				.from('player_scores')
-				.select('score, player_username, player_email')
+				.select('id, score, player_username, player_email')
 				.order('score', { ascending: false })
 				.limit(Number(top))
 			return json(result)
@@ -41,7 +41,9 @@ const playerScoreSchema = z.object({
 		.toUpperCase()
 		.min(3, 'username must be at least 3 character')
 		.max(5, 'username must be at most 5 characters'),
-	player_email: z.string().trim().email('Must be a proper email').optional(),
+	// Make email optional and wildcard anything
+	// Only users who actually enters a valid email will be in the drawing
+	player_email: z.string().trim().optional(),
 })
 
 export const POST: RequestHandler = async ({ request }) => {
