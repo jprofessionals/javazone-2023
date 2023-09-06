@@ -48,14 +48,14 @@
 						<img alt="" class="w-28 rounded-lg border-4 border-blue-500" src={RightImg} />
 						Turn right and drive to next intersection
 					</div>
+					<!-- <div class="flex items-center gap-2"> -->
+					<!-- 	<img alt="" class="w-28 border-4 border-purple-500 rounded-lg" src={UturnImg} /> -->
+					<!-- 	<span>Take a u-turn and drive to next intersection <b>[rare]</b> </span> -->
+					<!-- </div> -->
 					<div class="flex items-center gap-2">
-						<img alt="" class="w-28 border-4 border-purple-500 rounded-lg" src={UturnImg} />
-						<span>Take a u-turn and drive to next intersection <b>[rare]</b> </span>
-					</div>
-					<div class="flex items-center gap-2">
-						<img alt="" class="w-28 rounded-lg border-4 border-orange-500" src={Forward2Img} />
+						<img alt="" class="w-28 rounded-lg border-4 border-purple-500" src={Forward2Img} />
 						<span>
-							Same as forward, but twice <b>[legendary]</b>
+							Same as forward, but twice <b>[rare]</b>
 						</span>
 					</div>
 				</div>
@@ -82,7 +82,7 @@
 				the car can drive to and fro.
 			</p>
 			<img
-				src={isSecondDay ? GameImg2 : GameImg1}
+				src={isSecondDay ? GameImg1 : GameImg2}
 				alt="Overview of the game board with the layout and how many points are where"
 				class="w-full"
 			/>
