@@ -15,6 +15,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				.from('player_scores')
 				.select('id, score, player_username, player_email')
 				.order('score', { ascending: false })
+				.gte('created_at', '2023-09-07')
 				.limit(Number(top))
 			return json(result)
 		} else {
