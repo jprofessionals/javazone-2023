@@ -5,7 +5,6 @@
 	import Forward2Img from '$lib/images/2forward.png'
 	import LeftImg from '$lib/images/left.png'
 	import RightImg from '$lib/images/right.png'
-	import UturnImg from '$lib/images/uturn.png'
 
 	let isSecondDay = false
 
