@@ -14,58 +14,59 @@ class Globals:
                        Robot(1.0, 0.83, False),
                        Robot(0.90, 1.0, True)]
 
-        self.cards = {
-            1944688892: Card(3),
-            2214546422: Card(0, True),
-            3287137276: Card(1),
-            871609077: Card(1),
-            4081897461: Card(2),
+        # Day 1 cards
+        # self.cards = {
+        #     1944688892: Card(3),  # A1
+        #     2214546422: Card(0, True),  # A2
+        #     3287137276: Card(1),  # A3
+        #     871609077: Card(1),  # A4
+        #     4081897461: Card(2),  # A5
 
-            3004060668: Card(-2),
-            1944446709: Card(1),
-            1676494582: Card(2),
-            329147126: Card(1),
-            3543034358: Card(-3),
+        #     3004060668: Card(-2),  # B1
+        #     1944446709: Card(1),  # B2
+        #     1676494582: Card(2),  # B3
+        #     329147126: Card(1),  # B4
+        #     3543034358: Card(-3),  # B5
 
-            2735262972: Card(1),
-            2481922550: Card(2),
-            3010023420: Card(-1),
-            864110588: Card(1),
-            601800188: Card(1),
+        #     2735262972: Card(1),  # C1
+        #     2481922550: Card(2),  # C2
+        #     3010023420: Card(-1),  # C3
+        #     864110588: Card(1),  # C4
+        #     601800188: Card(1),  # C5
 
-            3813451004: Card(3),
-            3019725814: Card(1),
-            1667070454: Card(2),
-            868100604: Card(-1),
-            3278031868: Card(6),
-        }
+        #     3813451004: Card(3),  # D1
+        #     3019725814: Card(1),  # D2
+        #     1667070454: Card(2),  # D3
+        #     868100604: Card(-1),  # D4
+        #     3278031868: Card(6),  # D5
+        # }
 
         # Day 2 cards
-        # self.cards = {
-        #     1944688892: Card(2),
-        #     2214546422: Card(0, True),
-        #     3287137276: Card(1),
-        #     871609077: Card(2),
-        #     4081897461: Card(2),
-        #
-        #     3004060668: Card(1),
-        #     1944446709: Card(1),
-        #     1676494582: Card(-2),
-        #     329147126: Card(1),
-        #     3543034358: Card(1),
-        #
-        #     2735262972: Card(1),
-        #     2481922550: Card(-2),
-        #     3010023420: Card(6),
-        #     864110588: Card(-1),
-        #     601800188: Card(-1),
-        #
-        #     3813451004: Card(2),
-        #     3019725814: Card(1),
-        #     1667070454: Card(1),
-        #     868100604: Card(1),
-        #     3278031868: Card(3),
-        # }
+        self.cards = {
+            1944688892: Card(2),  # A1
+            2214546422: Card(0, True),  # A2
+            3287137276: Card(1),  # A3
+            871609077: Card(2),  # A4
+            4081897461: Card(2),  # A5
+
+            3004060668: Card(1),  # B1
+            1944446709: Card(1),  # B2
+            1676494582: Card(-2),  # B3
+            329147126: Card(1),  # B4
+            3543034358: Card(1),  # B5
+
+            2735262972: Card(1),  # C1
+            2481922550: Card(-2),  # C2
+            3010023420: Card(6),  # C3
+            864110588: Card(-1),  # C4
+            601800188: Card(-1),  # C5
+
+            3813451004: Card(2),  # D1
+            3019725814: Card(1),  # D2
+            1667070454: Card(1),  # D3
+            868100604: Card(1),  # D4
+            3278031868: Card(3),  # D5
+        }
 
         self.MAX_MSG_LENGTH = 251
 
@@ -95,6 +96,7 @@ class Robot:
         self.leftCalibrate = leftCalibrate
         self.rightCalibrate = rightCalibrate
         self.useCollisionDetection = useCollisionDetection
+
 
 class RFIDCom:
     READY = 1
@@ -265,6 +267,7 @@ class PN532:
                         if response != globals.mostRecentTag:
                             # send the tag to the server
                             globals.mostRecentTagCrossedTime = currentRFIDTime
+                            print(str(response))
                             radio.send(str(response))
                             drive.stop()  # stop the robot and load the next command
 
@@ -275,14 +278,14 @@ class PN532:
 
                             if globals.runIsStarted:
                                 globals.mostRecentScoreEarnedTime = currentRFIDTime
-                                print("new card found: ", response)
+                                # print("new card found: ", response)
                                 if response in globals.cards:
                                     globals.points = (
                                             globals.points
                                             + globals.cards.get(response).points
                                     )
-                                else:
-                                    globals.points = response
+                                # else:
+                                #     globals.points = response
                                 display.scroll(
                                     str(globals.points), wait=False, loop=True
                                 )
@@ -459,6 +462,11 @@ def setLEDs(fireleds, r, g, b, brightness=1.0, count=6):
             int(255.0 * g * brightness),
             int(255.0 * b * brightness)
         )
+
+    if count < 6:
+        for pixel_id in range(count, 6):
+            fireleds[pixel_id] = fireleds[pixel_id + 6] = (0, 0, 0)
+
     fireleds.show()
 
 
@@ -516,7 +524,10 @@ def commandsDownload(globals):
 
 def endRun(globals, drive):
     drive.stop()
-    radio.send(str("RUN_END"))
+
+    for i in range(5):
+        print(str("RUN_END " + str(globals.points)))
+        radio.send(str("RUN_END " + str(globals.points)))
 
 
 display.on()
@@ -545,6 +556,7 @@ while True:
             runningTime = running_time()
             if runningTime >= (globals.mostRecentTagCrossedTime + globals.game_timeout):
                 # TODO: only send if car is not on a tag
+                print("TIMEOUT")
                 radio.send("TIMEOUT")
                 break
 
@@ -552,6 +564,7 @@ while True:
                     globals.robots[globals.CURRENT_ROBOT].useCollisionDetection
                     and pin1.read_digital() == 0
             ):
+                print("CRASH")
                 radio.send("CRASH")
                 break
 
@@ -587,6 +600,7 @@ while True:
         chunk_size = globals.MAX_MSG_LENGTH
         for i in range(0, len(exception_text), chunk_size):
             chunk = exception_text[i:i+chunk_size]
+            print(chunk)
             radio.send(chunk)
 
         display.show(Image.SKULL)
